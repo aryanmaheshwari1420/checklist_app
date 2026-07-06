@@ -1,3 +1,4 @@
+import 'package:checklist_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/createchecklist.dart';
 import 'package:flutter/material.dart';
 
@@ -18,19 +19,54 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  late final ProviderSubscription<AsyncValue> _authListener;
 
-  @override
-  void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
-  }
+@override
+void initState() {
+  super.initState();
+
+  _authListener = ref.listenManual(
+    authControllerProvider,
+    (previous, next) {
+      next.whenOrNull(
+        data: (user) {
+          if (user != null) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const CreateCheckListScreen(),
+              ),
+            );
+          }
+        },
+        error: (error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString())),
+          );
+        },
+      );
+    },
+  );
+}
+
+@override
+void dispose() {
+  _authListener.close();
+
+  firstNameController.dispose();
+  lastNameController.dispose();
+  emailController.dispose();
+  passwordController.dispose();
+  confirmPasswordController.dispose();
+
+  super.dispose();
+}
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final loading = authState.isLoading;
+
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -42,6 +78,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Form(
           key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -177,26 +214,38 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Firebase Registration
-                      // We'll connect this in the next step.
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const CreateCheckListScreen(),
+                  onPressed: loading
+                      ? null
+                      : () async {
+                          FocusScope.of(context).unfocus(); 
+                          if (!_formKey.currentState!.validate()) return;
+
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .register(
+                                firstName: firstNameController.text.trim(),
+                                lastName: lastNameController.text.trim(),
+                                email: emailController.text.trim(),
+                                password: passwordController.text.trim(),
+                              );
+                        },
+
+                  child: loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          "Create Account",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    "Create Account",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
                 ),
               ),
-
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -238,55 +287,44 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Widget _buildTextField({
-  required TextEditingController controller,
-  required String hint,
-  required IconData icon,
-  TextInputType keyboardType = TextInputType.text,
-  bool obscureText = false,
-  String? Function(String?)? validator,
-}) {
-  return TextFormField(
-    controller: controller,
-    keyboardType: keyboardType,
-    obscureText: obscureText,
-    validator: validator,
-    decoration: InputDecoration(
-      prefixIcon: Icon(
-        icon,
-        color: const Color(0xff5B3DF5),
-      ),
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        vertical: 18,
-        horizontal: 16,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: Color(0xff5B3DF5),
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: const Color(0xff5B3DF5)),
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 18,
+          horizontal: 16,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xff5B3DF5)),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red),
         ),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: Colors.red,
-        ),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: Colors.red,
-        ),
-      ),
-    ),
-  );
-}
+    );
+  }
 }
