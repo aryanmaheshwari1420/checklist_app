@@ -1,4 +1,3 @@
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/createchecklist.dart';
 import 'package:checklist_app/features/auth/presentation/screens/login_screens/sign_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

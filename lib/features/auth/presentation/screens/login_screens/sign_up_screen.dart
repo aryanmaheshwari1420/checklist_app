@@ -97,7 +97,7 @@ class SignUpScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          const CreateChecklistScreen(),
+                          const CreateCheckListScreen(),
                     ),
                   );
                 },
