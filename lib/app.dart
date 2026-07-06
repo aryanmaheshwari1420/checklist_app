@@ -1,7 +1,7 @@
+import 'package:checklist_app/features/auth/presentation/screens/login_screens/loginscreen.dart';
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/pages/splash_page.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -14,7 +14,7 @@ class App extends StatelessWidget {
 
       theme: AppTheme.light,
 
-      home: const SplashPage(),
+      home: const LoginScreen(),
     );
   }
 }
