@@ -1,5 +1,5 @@
 import 'package:checklist_app/features/auth/presentation/providers/auth_controller.dart';
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/createchecklist.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

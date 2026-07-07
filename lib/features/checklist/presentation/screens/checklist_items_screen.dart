@@ -1,56 +1,74 @@
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/Sucesssceen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
+import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
+import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddITemCategoryScreen extends StatefulWidget {
-  final List<String> categories;
-
-  const AddITemCategoryScreen({super.key, required this.categories});
+class AddITemCategoryScreen extends ConsumerStatefulWidget {
+  const AddITemCategoryScreen({super.key});
 
   @override
-  State<AddITemCategoryScreen> createState() => _AddITemCategoryScreenState();
+  ConsumerState<AddITemCategoryScreen> createState() =>
+      _AddITemCategoryScreenState();
 }
 
-class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
+class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
   void editItemDialog(String category, int index) {
-    final controller = TextEditingController(
-      text: categoryItems[category]![index]["title"],
-    );
+  final items = ref.read(checklistControllerProvider).items[category] ?? [];
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Edit Item"),
-          content: TextField(controller: controller),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff5B3DF5),
-              ),
-              onPressed: () {
-                setState(() {
-                  categoryItems[category]![index]["title"] = controller.text
-                      .trim();
-                });
+  final oldItem = items[index];
 
-                Navigator.pop(context);
-              },
-              child: const Text(
-                "Update",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  final controller = TextEditingController(
+    text: oldItem.title,
+  );
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text("Edit Item"),
+      content: TextField(
+        controller: controller,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xff5B3DF5),
+          ),
+          onPressed: () {
+            final value = controller.text.trim();
+
+            if (value.isNotEmpty) {
+              ref
+                  .read(checklistControllerProvider.notifier)
+                  .updateItem(
+                    category: category,
+                    oldItem: oldItem,
+                    newItem: oldItem.copyWith(
+                      title: value,
+                    ),
+                  );
+            }
+
+            Navigator.pop(context);
+          },
+          child: const Text(
+            "Update",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   void deleteItem(String category, int index) {
+    final items = ref.read(checklistControllerProvider).items[category] ?? [];
+    final item = items[index];
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -64,9 +82,12 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              setState(() {
-                categoryItems[category]!.removeAt(index);
-              });
+              ref
+                  .read(checklistControllerProvider.notifier)
+                  .removeItem(
+                    category: category,
+                    item: item,
+                  );
 
               Navigator.pop(context);
             },
@@ -106,12 +127,12 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
                 final value = controller.text.trim();
 
                 if (value.isNotEmpty) {
-                  setState(() {
-                    categoryItems[category]!.add({
-                      "title": value,
-                      "checked": false,
-                    });
-                  });
+                  ref
+                      .read(checklistControllerProvider.notifier)
+                      .addItem(
+                        category: category,
+                        item: value,
+                      );
                 }
 
                 Navigator.pop(context);
@@ -124,21 +145,14 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
     );
   }
 
-  late Map<String, List<Map<String, dynamic>>> categoryItems;
-
-  @override
-  void initState() {
-    super.initState();
-
-    categoryItems = {};
-
-    for (var category in widget.categories) {
-      categoryItems[category] = [];
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(checklistControllerProvider);
+
+    final categories = state.categories;
+
+    final items = state.items;
+
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
@@ -189,12 +203,14 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
 
             Expanded(
               child: ListView.builder(
-                itemCount: widget.categories.length,
+                itemCount: categories.length,
 
                 itemBuilder: (context, index) {
-                  final category = widget.categories[index];
+                  final category = categories[index];
 
-                  final items = categoryItems[category]!;
+                  // Renamed from `items` to avoid shadowing the outer
+                  // `items` map (state.items) declared in build().
+                  final categoryItemList = items[category] ?? [];
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
@@ -211,7 +227,7 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
                       initiallyExpanded: index == 0,
 
                       title: Text(
-                        "$category (${items.length})",
+                        "$category (${categoryItemList.length})",
 
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
@@ -221,7 +237,7 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
                       ),
 
                       children: [
-                        if (items.isEmpty)
+                        if (categoryItemList.isEmpty)
                           const Padding(
                             padding: EdgeInsets.only(bottom: 15),
 
@@ -232,23 +248,34 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
                             ),
                           ),
 
-                        ...items.asMap().entries.map((entry) {
+                        ...categoryItemList.asMap().entries.map((entry) {
                           int itemIndex = entry.key;
 
-                          Map<String, dynamic> item = entry.value;
+                          final ChecklistItem item = entry.value;
 
                           return ListTile(
                             leading: Checkbox(
-                              value: item["checked"],
+                              value: item.checked,
                               activeColor: const Color(0xff5B3DF5),
                               onChanged: (value) {
-                                setState(() {
-                                  items[itemIndex]["checked"] = value!;
-                                });
+                                // Update through the notifier instead of
+                                // setState mutating a local list — the
+                                // provider is the single source of truth,
+                                // and ref.watch above already rebuilds
+                                // this widget when it changes.
+                                final updatedItem = item.copyWith(checked: value);
+
+                                ref
+                                    .read(checklistControllerProvider.notifier)
+                                    .updateItem(
+                                      category: category,
+                                      oldItem: item,
+                                      newItem: updatedItem,
+                                    );
                               },
                             ),
 
-                            title: Text(item["title"]),
+                            title: Text(item.title),
 
                             trailing: PopupMenuButton<String>(
                               onSelected: (value) {
@@ -329,13 +356,30 @@ class _AddITemCategoryScreenState extends State<AddITemCategoryScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff5B3DF5),
                     ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
+                    onPressed: () async {
+                      // TODO : Implement checklist creation logic here, e.g., saving to a database or state management.
+
+                      final success  = await ref
+                      .read(checklistControllerProvider.notifier)
+                      .createChecklist();
+
+                      if(!mounted) return;
+
+                      if(success){
+Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (_) => const SuccessScreen(),
                         ),
                       );
+                      }else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Failed to create checklist. Please try again."),
+                          ),
+                        );
+                      }
+                      
                     },
 
                     child: const Text(

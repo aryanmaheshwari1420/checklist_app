@@ -1,15 +1,17 @@
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/addcategoryscreen.dart';
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/createchecklist.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/category_selection_screen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
+import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MoreDetailScreen extends StatefulWidget {
+class MoreDetailScreen extends ConsumerStatefulWidget {
   const MoreDetailScreen({super.key});
 
   @override
-  State<MoreDetailScreen> createState() => _MoreDetailScreenState();
+  ConsumerState<MoreDetailScreen> createState() => _MoreDetailScreenState();
 }
 
-class _MoreDetailScreenState extends State<MoreDetailScreen> {
+class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
   final TextEditingController notesController = TextEditingController();
 
   final List<String> categories = [
@@ -31,6 +33,31 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
 
   TimeOfDay? reminderTime;
 
+  @override
+  void initState() {
+    super.initState();
+
+    final checklist =  ref.read(checklistControllerProvider);
+
+    if(checklist.category.isNotEmpty){
+      selectedCategory = checklist.category;
+    }
+
+    selectedPriority = checklist.priority;
+    reminder = checklist.reminderEnabled;
+    reminderDate = checklist.reminderDateTime;
+
+    if(checklist.reminderDateTime!=null){
+      reminderTime = TimeOfDay.fromDateTime(checklist.reminderDateTime!);
+    }
+    notesController.text = checklist.notes;
+  }
+  @override
+void dispose() {
+  notesController.dispose();
+  super.dispose();
+}
+
   Future<void> pickReminderDate() async {
     final date = await showDatePicker(
       context: context,
@@ -41,7 +68,17 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
 
     if (date != null) {
       setState(() {
-        reminderDate = date;
+        if (reminderTime != null) {
+  reminderDate = DateTime(
+    date.year,
+    date.month,
+    date.day,
+    reminderTime!.hour,
+    reminderTime!.minute,
+  );
+} else {
+  reminderDate = date;
+}
       });
     }
   }
@@ -55,6 +92,16 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
     if (time != null) {
       setState(() {
         reminderTime = time;
+
+if (reminderDate != null) {
+  reminderDate = DateTime(
+    reminderDate!.year,
+    reminderDate!.month,
+    reminderDate!.day,
+    time.hour,
+    time.minute,
+  );
+}
       });
     }
   }
@@ -65,7 +112,7 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
     return ChoiceChip(
       label: Text(value),
       selected: selected,
-      selectedColor: const Color(0xff5B3DF5),
+      selectedColor: const Color(0xff5B3DF5), 
       labelStyle: TextStyle(
         color: selected ? Colors.white : Colors.black,
         fontWeight: FontWeight.w600,
@@ -78,8 +125,10 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
@@ -313,7 +362,7 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pushReplacement(
+                        Navigator.pop(
                           context,
                           MaterialPageRoute(
                             builder: (_) =>
@@ -339,6 +388,16 @@ class _MoreDetailScreenState extends State<MoreDetailScreen> {
                         ),
                       ),
                       onPressed: () {
+
+
+                        ref.read(checklistControllerProvider.notifier).updateDetails(
+                          category: selectedCategory,
+                          priority: selectedPriority,
+                          reminderEnabled: reminder,
+                          reminderDateTime: reminderDate,
+                          notes: notesController.text.trim(),
+                        );
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(

@@ -1,14 +1,19 @@
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/moredetailscreen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/checklist_details_screen.dart';
+import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CreateCheckListScreen extends StatefulWidget {
+class CreateCheckListScreen extends ConsumerStatefulWidget {
   const CreateCheckListScreen({super.key});
 
   @override
-  State<CreateCheckListScreen> createState() => _CreateCheckListScreenState();
+  ConsumerState<CreateCheckListScreen> createState() => _CreateCheckListScreenState();
 }
 
-class _CreateCheckListScreenState extends State<CreateCheckListScreen> {
+class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
+
+  final _formkey =  GlobalKey<FormState>();
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController =
       TextEditingController();
@@ -39,7 +44,18 @@ class _CreateCheckListScreenState extends State<CreateCheckListScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    final checklist =  ref.read(checklistControllerProvider);
+
+    nameController.text = checklist.title;
+    descriptionController.text = checklist.description;
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
@@ -60,7 +76,9 @@ class _CreateCheckListScreenState extends State<CreateCheckListScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: Column(
+          child: Form(
+            key: _formkey,
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
@@ -117,8 +135,14 @@ class _CreateCheckListScreenState extends State<CreateCheckListScreen> {
 
               const SizedBox(height: 8),
 
-              TextField(
+              TextFormField(
                 controller: nameController,
+                validator: (value) {
+                  if(value==null || value.trim().isEmpty){
+                    return "Checklist name is required";
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   hintText: "Bali Trip",
                   filled: true,
@@ -206,12 +230,20 @@ class _CreateCheckListScreenState extends State<CreateCheckListScreen> {
                   ),
                   onPressed: () {
 
-                    Navigator.push(
+                    if(_formkey.currentState!.validate()){
+                      ref.read(checklistControllerProvider.notifier).updateBasicInfo(
+                        title: nameController.text.trim(),
+                        description: descriptionController.text.trim(),
+                      );
+                      Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) =>  MoreDetailScreen(),
                       ),
                     );
+                    }
+
+                    
 
                   },
                   child: const Text(
@@ -227,6 +259,6 @@ class _CreateCheckListScreenState extends State<CreateCheckListScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

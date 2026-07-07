@@ -1,0 +1,31 @@
+import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class ChecklistRepository {
+  ChecklistRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
+
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  Future<void> createChecklist(ChecklistModel checklist) async {
+    final uid = _auth.currentUser!.uid;
+
+    final doc = _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('checklists')
+        .doc();
+
+    await doc.set({
+      ...checklist.toMap(),
+      'id': doc.id,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+}

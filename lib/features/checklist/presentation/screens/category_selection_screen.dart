@@ -1,15 +1,21 @@
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/additemcategoryscreen.dart';
-import 'package:checklist_app/features/auth/presentation/screens/check_list_screens/moredetailscreen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/checklist_items_screen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/checklist_details_screen.dart';
+import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddCategoryScreen extends StatefulWidget {
+class AddCategoryScreen extends ConsumerStatefulWidget {
   const AddCategoryScreen({super.key});
 
   @override
-  State<AddCategoryScreen> createState() => _AddCategoryScreenState();
+  ConsumerState<AddCategoryScreen> createState() => _AddCategoryScreenState();
 }
 
-class _AddCategoryScreenState extends State<AddCategoryScreen> {
+class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
+
+  List<String> get categories => ref.read(checklistControllerProvider).categories;
+
+
   // -------------------- ADD CATEGORY --------------------
 
   void addCategoryDialog() {
@@ -41,9 +47,13 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                 final value = controller.text.trim();
 
                 if (value.isNotEmpty) {
-                  setState(() {
-                    categories.add(value);
-                  });
+                  // setState(() {
+                  //   categories.add(value);
+                  // }
+                  // );
+                  ref
+                      .read(checklistControllerProvider.notifier)
+                      .addCategory(value);
                 }
 
                 Navigator.pop(context);
@@ -89,9 +99,16 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                 final value = controller.text.trim();
 
                 if (value.isNotEmpty) {
-                  setState(() {
-                    categories[index] = value;
-                  });
+                  // setState(() {
+                  //   categories[index] = value;
+                  // });
+
+                  ref
+    .read(checklistControllerProvider.notifier)
+    .updateCategory(
+      oldName: categories[index],
+      newName: value,
+    );
                 }
 
                 Navigator.pop(context);
@@ -128,7 +145,13 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 setState(() {
-                  categories.removeAt(index);
+                  // categories.removeAt(index);
+
+                  ref
+    .read(checklistControllerProvider.notifier)
+    .removeCategory(
+      categories[index],
+    );
                 });
 
                 Navigator.pop(context);
@@ -144,10 +167,12 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
     );
   }
 
-  final List<String> categories = [];
 
   @override
   Widget build(BuildContext context) {
+
+    final categories = ref.watch(checklistControllerProvider).categories;
+     
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
@@ -240,7 +265,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pushReplacement(
+                        Navigator.pop(
                           context,
 
                           MaterialPageRoute(
@@ -267,8 +292,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      AddITemCategoryScreen(categories: categories),
+                                  builder: (_) => const AddITemCategoryScreen(),
                                 ),
                               );
                             },
