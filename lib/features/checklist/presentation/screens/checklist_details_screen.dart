@@ -1,6 +1,6 @@
 import 'package:checklist_app/features/checklist/presentation/screens/category_selection_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
-import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -249,7 +249,7 @@ if (reminderDate != null) {
 
                   Switch(
                     value: reminder,
-                    activeColor: const Color(0xff5B3DF5),
+                    activeThumbColor: const Color(0xff5B3DF5),
                     onChanged: (value) {
                       setState(() {
                         reminder = value;

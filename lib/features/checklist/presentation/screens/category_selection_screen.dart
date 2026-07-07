@@ -1,6 +1,6 @@
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_items_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_details_screen.dart';
-import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,6 +1,6 @@
 import 'package:checklist_app/core/services/firebase_auth_service.dart';
 import 'package:checklist_app/core/services/firestore_service.dart';
-import 'package:checklist_app/shared/repository/auth_repository.dart';
+import 'package:checklist_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

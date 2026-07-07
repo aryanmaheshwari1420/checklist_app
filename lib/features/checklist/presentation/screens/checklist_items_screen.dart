@@ -1,5 +1,5 @@
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
-import 'package:checklist_app/features/checklist/providers/checklist_controller.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -357,7 +357,6 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       backgroundColor: const Color(0xff5B3DF5),
                     ),
                     onPressed: () async {
-                      // TODO : Implement checklist creation logic here, e.g., saving to a database or state management.
 
                       final success  = await ref
                       .read(checklistControllerProvider.notifier)

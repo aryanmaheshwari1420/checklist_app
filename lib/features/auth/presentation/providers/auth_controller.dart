@@ -1,5 +1,5 @@
 import 'package:checklist_app/shared/models/user_model.dart';
-import 'package:checklist_app/shared/repository/auth_repository.dart';
+import 'package:checklist_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_providers.dart';
