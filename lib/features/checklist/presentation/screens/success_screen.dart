@@ -1,9 +1,12 @@
+import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:flutter/material.dart';
 // import 'home_screen.dart'; // Replace with your actual home/dashboard screen
 
 class SuccessScreen extends StatelessWidget {
-  const SuccessScreen({super.key});
+
+  final String checklistId;
+  const SuccessScreen({super.key,required this.checklistId});
 
   @override
   Widget build(BuildContext context) {
@@ -69,18 +72,13 @@ class SuccessScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-
-                    // Navigate to Home / Checklist Screen
-                    // Replace this with your actual screen.
-
-                    /*
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const HomeScreen(),
+                        builder: (_) => ChecklistOverviewScreen(checklistId: checklistId),
                       ),
                     );
-                    */
+                    
 
                   },
                   child: const Text(

@@ -1,6 +1,7 @@
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_repository_provider.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_state.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final checklistControllerProvider =
@@ -14,22 +15,34 @@ class ChecklistController extends Notifier<ChecklistState> {
     return ChecklistState.initial();
   }
 
-  Future<bool> createChecklist() async {
+  Future<String?> createChecklist() async {
   try {
     final repository = ref.read(checklistRepositoryProvider);
 
-    await repository.createChecklist(
-      state.toChecklistModel(),
-    );
+    final checklistId = await repository.createChecklist(state.toChecklistModel());
 
     clear();
 
-    return true;
+    return checklistId;
   } catch (e) {
-    print(e);
-    return false;
+    debugPrint(e.toString());
+    return null;
   }
 }
+
+  Future<ChecklistModel?> getChecklistById(String checklistId) async {
+    try {
+      final repository = ref.read(checklistRepositoryProvider);
+
+      final checklist = await repository.getChecklistById(checklistId);
+
+      return checklist;
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
+    }
+  }
+
 
   /// STEP 1
   void updateBasicInfo({

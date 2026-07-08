@@ -14,56 +14,47 @@ class AddITemCategoryScreen extends ConsumerStatefulWidget {
 
 class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
   void editItemDialog(String category, int index) {
-  final items = ref.read(checklistControllerProvider).items[category] ?? [];
+    final items = ref.read(checklistControllerProvider).items[category] ?? [];
 
-  final oldItem = items[index];
+    final oldItem = items[index];
 
-  final controller = TextEditingController(
-    text: oldItem.title,
-  );
+    final controller = TextEditingController(text: oldItem.title);
 
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text("Edit Item"),
-      content: TextField(
-        controller: controller,
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Item"),
+        content: TextField(controller: controller),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff5B3DF5),
+            ),
+            onPressed: () {
+              final value = controller.text.trim();
+
+              if (value.isNotEmpty) {
+                ref
+                    .read(checklistControllerProvider.notifier)
+                    .updateItem(
+                      category: category,
+                      oldItem: oldItem,
+                      newItem: oldItem.copyWith(title: value),
+                    );
+              }
+
+              Navigator.pop(context);
+            },
+            child: const Text("Update", style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff5B3DF5),
-          ),
-          onPressed: () {
-            final value = controller.text.trim();
-
-            if (value.isNotEmpty) {
-              ref
-                  .read(checklistControllerProvider.notifier)
-                  .updateItem(
-                    category: category,
-                    oldItem: oldItem,
-                    newItem: oldItem.copyWith(
-                      title: value,
-                    ),
-                  );
-            }
-
-            Navigator.pop(context);
-          },
-          child: const Text(
-            "Update",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 
   void deleteItem(String category, int index) {
     final items = ref.read(checklistControllerProvider).items[category] ?? [];
@@ -84,10 +75,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
             onPressed: () {
               ref
                   .read(checklistControllerProvider.notifier)
-                  .removeItem(
-                    category: category,
-                    item: item,
-                  );
+                  .removeItem(category: category, item: item);
 
               Navigator.pop(context);
             },
@@ -129,10 +117,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                 if (value.isNotEmpty) {
                   ref
                       .read(checklistControllerProvider.notifier)
-                      .addItem(
-                        category: category,
-                        item: value,
-                      );
+                      .addItem(category: category, item: value);
                 }
 
                 Navigator.pop(context);
@@ -263,7 +248,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                 // provider is the single source of truth,
                                 // and ref.watch above already rebuilds
                                 // this widget when it changes.
-                                final updatedItem = item.copyWith(checked: value);
+                                final updatedItem = item.copyWith(
+                                  checked: value,
+                                );
 
                                 ref
                                     .read(checklistControllerProvider.notifier)
@@ -357,28 +344,29 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       backgroundColor: const Color(0xff5B3DF5),
                     ),
                     onPressed: () async {
+                      final checklistId = await ref
+                          .read(checklistControllerProvider.notifier)
+                          .createChecklist();
 
-                      final success  = await ref
-                      .read(checklistControllerProvider.notifier)
-                      .createChecklist();
+                      if (!mounted) return;
 
-                      if(!mounted) return;
-
-                      if(success){
-Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SuccessScreen(),
-                        ),
-                      );
-                      }else{
+                      if (checklistId != null) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                SuccessScreen(checklistId: checklistId),
+                          ),
+                        );
+                      } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text("Failed to create checklist. Please try again."),
+                            content: Text(
+                              "Failed to create checklist. Please try again.",
+                            ),
                           ),
                         );
                       }
-                      
                     },
 
                     child: const Text(

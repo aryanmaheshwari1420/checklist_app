@@ -12,7 +12,7 @@ class ChecklistRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  Future<void> createChecklist(ChecklistModel checklist) async {
+  Future<String> createChecklist(ChecklistModel checklist) async {
     final uid = _auth.currentUser!.uid;
 
     final doc = _firestore
@@ -27,5 +27,35 @@ class ChecklistRepository {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    return doc.id;
   }
+  
+
+  Future<void> updateChecklist(ChecklistModel checklist) async {
+    // Later
+  }
+
+  Future<void> deleteChecklist(String checklistId) async {
+    // Later
+  }
+
+  Future<ChecklistModel> getChecklistById(
+    String checklistId,
+) async {
+    final uid = _auth.currentUser!.uid;
+
+    final doc = await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('checklists')
+        .doc(checklistId)
+        .get();
+
+    if (!doc.exists) {
+      throw Exception('Checklist not found');
+    }
+
+    return ChecklistModel.fromMap(doc.data()!);
+  }
+  
 }

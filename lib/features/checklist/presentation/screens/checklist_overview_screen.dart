@@ -1,0 +1,168 @@
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../widgets/checklist_header.dart';
+import '../widgets/checklist_progress_bar.dart';
+import '../widgets/category_progress_tile.dart';
+
+class ChecklistOverviewScreen extends ConsumerWidget {
+  final String checklistId;
+
+  const ChecklistOverviewScreen({super.key, required this.checklistId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checklistAsync = ref.watch(checklistByIdProvider(checklistId));
+
+    return checklistAsync.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+
+      error: (error, _) =>
+          Scaffold(body: Center(child: Text(error.toString()))),
+
+      data: (checklist) {
+        if (checklist == null) {
+          return const Scaffold(
+            body: Center(child: Text("Checklist not found.")),
+          );
+        }
+        return Scaffold(
+          backgroundColor: const Color(0xffF7F7F7),
+
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+
+            centerTitle: true,
+
+            title: Text(
+              checklist?.title ?? "Checklist Overview",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            actions: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.edit_outlined, color: Colors.black),
+              ),
+
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.black),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: "delete", child: Text("Delete")),
+                ],
+              ),
+            ],
+          ),
+
+          floatingActionButton: FloatingActionButton.extended(
+            backgroundColor: const Color(0xff5B3DF5),
+
+            onPressed: () {},
+
+            icon: const Icon(Icons.add, color: Colors.white),
+
+            label: const Text(
+              "Add Item",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                ChecklistHeader(checklist: checklist),
+
+                const SizedBox(height: 25),
+
+                const ChecklistProgressBar(progress: 0.67),
+
+                const SizedBox(height: 25),
+
+                const Text(
+                  "Checklist for our Bali trip preparation.",
+                  style: TextStyle(fontSize: 15, color: Colors.black87),
+                ),
+
+                const SizedBox(height: 30),
+
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                  children: [
+                    Text(
+                      "Categories",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+
+                    Text(
+                      "Edit Order",
+                      style: TextStyle(
+                        color: Color(0xff5B3DF5),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: checklist.categories.length,
+                          itemBuilder: (context, index) {
+                            final category = checklist.categories[index];
+
+                            final items = checklist.items[category] ?? [];
+
+                            final completed = items
+                                .where((item) => item.checked)
+                                .length;
+
+                            return CategoryProgressTile(
+                              icon: Icons.folder_outlined,
+                              title: category,
+                              completed: completed,
+                              total: items.length,
+                              onTap: () {
+                                // next screen
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
