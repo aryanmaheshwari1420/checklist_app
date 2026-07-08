@@ -48,10 +48,12 @@ class ChecklistController extends Notifier<ChecklistState> {
   void updateBasicInfo({
     required String title,
     required String description,
+    DateTime? dueDate,
   }) {
     state = state.copyWith(
       title: title,
       description: description,
+      dueDate: dueDate,
     );
   }
 

@@ -7,6 +7,7 @@ class ChecklistState {
   // Step 1
   final String title;
   final String description;
+  final DateTime? dueDate;
 
   // Step 2
   final String category;
@@ -24,6 +25,7 @@ class ChecklistState {
   const ChecklistState({
     this.title = '',
     this.description = '',
+    this.dueDate,
     this.category = '',
     this.priority = 'Medium',
     this.reminderEnabled = false,
@@ -36,6 +38,7 @@ class ChecklistState {
   ChecklistState copyWith({
     String? title,
     String? description,
+    DateTime? dueDate,
     String? category,
     String? priority,
     bool? reminderEnabled,
@@ -47,6 +50,7 @@ class ChecklistState {
     return ChecklistState(
       title: title ?? this.title,
       description: description ?? this.description,
+      dueDate: dueDate ?? this.dueDate,
       category: category ?? this.category,
       priority: priority ?? this.priority,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
@@ -61,6 +65,7 @@ class ChecklistState {
     return ChecklistModel(
       title: title,
       description: description,
+      dueDate: dueDate,
       category: category,
       priority: priority,
       reminderEnabled: reminderEnabled,

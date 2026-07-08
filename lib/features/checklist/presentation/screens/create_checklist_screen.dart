@@ -25,7 +25,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
       context: context,
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
-      initialDate: DateTime.now(),
+      initialDate: selectedDate ?? DateTime.now(),
     );
 
     if (pickedDate != null) {
@@ -47,10 +47,11 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
   void initState() {
     super.initState();
 
-    final checklist =  ref.read(checklistControllerProvider);
+    final checklist = ref.read(checklistControllerProvider);
 
     nameController.text = checklist.title;
     descriptionController.text = checklist.description;
+    selectedDate = checklist.dueDate;
   }
 
   @override
@@ -234,6 +235,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                       ref.read(checklistControllerProvider.notifier).updateBasicInfo(
                         title: nameController.text.trim(),
                         description: descriptionController.text.trim(),
+                        dueDate: selectedDate,
                       );
                       Navigator.push(
                       context,

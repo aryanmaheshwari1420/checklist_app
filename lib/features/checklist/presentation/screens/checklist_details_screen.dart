@@ -178,7 +178,7 @@ if (reminderDate != null) {
               const SizedBox(height: 35),
 
               const Text(
-                "Category",
+                "Type",
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                 ),

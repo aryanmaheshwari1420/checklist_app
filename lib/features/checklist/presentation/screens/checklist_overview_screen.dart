@@ -45,7 +45,7 @@ class ChecklistOverviewScreen extends ConsumerWidget {
             centerTitle: true,
 
             title: Text(
-              checklist?.title ?? "Checklist Overview",
+              checklist.title,
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w600,

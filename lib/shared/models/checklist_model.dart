@@ -4,6 +4,7 @@ class ChecklistModel {
   // Step 1
   final String title;
   final String description;
+  final DateTime? dueDate;
 
   // Step 2
   final String category;
@@ -22,6 +23,7 @@ class ChecklistModel {
     this.id,
     required this.title,
     required this.description,
+    required this.dueDate,
     required this.category,
     required this.priority,
     required this.reminderEnabled,
@@ -35,6 +37,7 @@ class ChecklistModel {
     String? id,
     String? title,
     String? description,
+    DateTime? dueDate,
     String? category,
     String? priority,
     bool? reminderEnabled,
@@ -47,6 +50,7 @@ class ChecklistModel {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      dueDate: dueDate ?? this.dueDate,
       category: category ?? this.category,
       priority: priority ?? this.priority,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
@@ -62,6 +66,7 @@ class ChecklistModel {
       'id': id,
       'title': title,
       'description': description,
+      'dueDate': dueDate?.toIso8601String(),
       'category': category,
       'priority': priority,
       'reminderEnabled': reminderEnabled,
@@ -80,6 +85,9 @@ class ChecklistModel {
       id: map['id'],
       title: map['title'] ?? '',
       description: map['description'] ?? '',
+      dueDate: map['dueDate'] != null
+          ? DateTime.parse(map['dueDate'])
+          : null,
       category: map['category'] ?? '',
       priority: map['priority'] ?? 'Medium',
       reminderEnabled: map['reminderEnabled'] ?? false,
