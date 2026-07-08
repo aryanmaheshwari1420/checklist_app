@@ -1,4 +1,4 @@
-import 'package:checklist_app/features/auth/presentation/screens/login_screens/loginscreen.dart';
+import 'package:checklist_app/features/auth/presentation/screens/login_screens/auth_gate.dart';
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
@@ -14,7 +14,7 @@ class App extends StatelessWidget {
 
       theme: AppTheme.light,
 
-      home: const LoginScreen(),
+      home: const AuthGate(),
     );
   }
 }

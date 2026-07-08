@@ -351,12 +351,13 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       if (!mounted) return;
 
                       if (checklistId != null) {
-                        Navigator.pushReplacement(
+                        Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
                             builder: (_) =>
                                 SuccessScreen(checklistId: checklistId),
                           ),
+                          (route) => false,
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

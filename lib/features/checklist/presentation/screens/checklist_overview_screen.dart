@@ -1,4 +1,5 @@
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
+import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +11,19 @@ class ChecklistOverviewScreen extends ConsumerWidget {
   final String checklistId;
 
   const ChecklistOverviewScreen({super.key, required this.checklistId});
+
+  double calculateChecklistProgress(ChecklistModel checklist) {
+    int total = 0;
+    int completed = 0;
+
+    for (final items in checklist.items.values) {
+      total += items.length;
+
+      completed += items.where((item) => item.checked).length;
+    }
+
+    return total == 0 ? 0.0 : completed / total;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -91,7 +105,9 @@ class ChecklistOverviewScreen extends ConsumerWidget {
 
                 const SizedBox(height: 25),
 
-                const ChecklistProgressBar(progress: 0.67),
+                ChecklistProgressBar(
+                  progress: calculateChecklistProgress(checklist),
+                ),
 
                 const SizedBox(height: 25),
 

@@ -1,23 +1,28 @@
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class ChecklistHeader extends StatelessWidget  {
+class ChecklistHeader extends StatelessWidget {
   final ChecklistModel checklist;
   const ChecklistHeader({super.key, required this.checklist});
 
-
-  double calculateChecklistProgress(ChecklistModel checklist) {
-  int total = 0;
-  int completed = 0;
-
-  for (final items in checklist.items.values) {
-    total += items.length;
-
-    completed += items.where((item) => item.checked).length;
+  String formatDate(String dateString) {
+    final date = DateTime.parse(dateString);
+    return DateFormat('dd MMMM yyyy').format(date);
   }
 
-  return total == 0 ? 0.0 : completed / total;
-}
+  double calculateChecklistProgress(ChecklistModel checklist) {
+    int total = 0;
+    int completed = 0;
+
+    for (final items in checklist.items.values) {
+      total += items.length;
+
+      completed += items.where((item) => item.checked).length;
+    }
+
+    return total == 0 ? 0.0 : completed / total;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +40,9 @@ class ChecklistHeader extends StatelessWidget  {
 
             const SizedBox(width: 6),
 
-            const Text(
-              "Due: 25 May 2024",
-              style: TextStyle(
+            Text(
+              "Due: ${formatDate(checklist.dueDate as String)}",
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black87,
                 fontWeight: FontWeight.w500,
@@ -47,10 +52,7 @@ class ChecklistHeader extends StatelessWidget  {
             const Spacer(),
 
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.red.shade50,
                 borderRadius: BorderRadius.circular(20),
@@ -83,15 +85,12 @@ class ChecklistHeader extends StatelessWidget  {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xffF1EDFF),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child:  Text(
+              child: Text(
                 checklist.category,
                 style: TextStyle(
                   color: Color(0xff5B3DF5),
@@ -102,13 +101,7 @@ class ChecklistHeader extends StatelessWidget  {
 
             const SizedBox(width: 12),
 
-            const Text(
-              "•",
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 18,
-              ),
-            ),
+            const Text("•", style: TextStyle(color: Colors.grey, fontSize: 18)),
 
             const SizedBox(width: 12),
 
