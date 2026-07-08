@@ -7,7 +7,7 @@ class ChecklistModel {
   final DateTime? dueDate;
 
   // Step 2
-  final String category;
+  final String type;
   final String priority;
   final bool reminderEnabled;
   final DateTime? reminderDateTime;
@@ -24,7 +24,7 @@ class ChecklistModel {
     required this.title,
     required this.description,
     required this.dueDate,
-    required this.category,
+    required this.type,
     required this.priority,
     required this.reminderEnabled,
     this.reminderDateTime,
@@ -38,7 +38,7 @@ class ChecklistModel {
     String? title,
     String? description,
     DateTime? dueDate,
-    String? category,
+    String? type,
     String? priority,
     bool? reminderEnabled,
     DateTime? reminderDateTime,
@@ -51,7 +51,7 @@ class ChecklistModel {
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
-      category: category ?? this.category,
+      type: type ?? this.type,
       priority: priority ?? this.priority,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderDateTime: reminderDateTime ?? this.reminderDateTime,
@@ -67,7 +67,7 @@ class ChecklistModel {
       'title': title,
       'description': description,
       'dueDate': dueDate?.toIso8601String(),
-      'category': category,
+      'type': type,
       'priority': priority,
       'reminderEnabled': reminderEnabled,
       'reminderDateTime': reminderDateTime?.toIso8601String(),
@@ -88,7 +88,7 @@ class ChecklistModel {
       dueDate: map['dueDate'] != null
           ? DateTime.parse(map['dueDate'])
           : null,
-      category: map['category'] ?? '',
+      type: map['type'] ?? '',
       priority: map['priority'] ?? 'Medium',
       reminderEnabled: map['reminderEnabled'] ?? false,
       reminderDateTime: map['reminderDateTime'] != null

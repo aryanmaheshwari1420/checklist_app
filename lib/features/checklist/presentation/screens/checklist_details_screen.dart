@@ -23,7 +23,7 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
     "Health"
   ];
 
-  String selectedCategory = "Travel";
+  String selectedType = "Travel";
 
   String selectedPriority = "Medium";
 
@@ -39,8 +39,8 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
 
     final checklist =  ref.read(checklistControllerProvider);
 
-    if(checklist.category.isNotEmpty){
-      selectedCategory = checklist.category;
+    if(checklist.type.isNotEmpty){
+      selectedType = checklist.type;
     }
 
     selectedPriority = checklist.priority;
@@ -195,7 +195,7 @@ if (reminderDate != null) {
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: selectedCategory,
+                    value: selectedType,
                     isExpanded: true,
                     items: categories.map((category) {
                       return DropdownMenuItem(
@@ -205,7 +205,7 @@ if (reminderDate != null) {
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        selectedCategory = value!;
+                        selectedType = value!;
                       });
                     },
                   ),
@@ -391,7 +391,7 @@ if (reminderDate != null) {
 
 
                         ref.read(checklistControllerProvider.notifier).updateDetails(
-                          category: selectedCategory,
+                          type: selectedType,
                           priority: selectedPriority,
                           reminderEnabled: reminder,
                           reminderDateTime: reminderDate,

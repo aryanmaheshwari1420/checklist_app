@@ -10,7 +10,7 @@ class ChecklistState {
   final DateTime? dueDate;
 
   // Step 2
-  final String category;
+  final String type;
   final String priority;
   final bool reminderEnabled;
   final DateTime? reminderDateTime;
@@ -26,7 +26,7 @@ class ChecklistState {
     this.title = '',
     this.description = '',
     this.dueDate,
-    this.category = '',
+    this.type = '',
     this.priority = 'Medium',
     this.reminderEnabled = false,
     this.reminderDateTime,
@@ -39,7 +39,7 @@ class ChecklistState {
     String? title,
     String? description,
     DateTime? dueDate,
-    String? category,
+    String? type,
     String? priority,
     bool? reminderEnabled,
     DateTime? reminderDateTime,
@@ -51,7 +51,7 @@ class ChecklistState {
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
-      category: category ?? this.category,
+      type: type ?? this.type,
       priority: priority ?? this.priority,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderDateTime: reminderDateTime ?? this.reminderDateTime,
@@ -66,7 +66,7 @@ class ChecklistState {
       title: title,
       description: description,
       dueDate: dueDate,
-      category: category,
+      type: type,
       priority: priority,
       reminderEnabled: reminderEnabled,
       reminderDateTime: reminderDateTime,

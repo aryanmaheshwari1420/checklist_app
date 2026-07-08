@@ -59,14 +59,14 @@ class ChecklistController extends Notifier<ChecklistState> {
 
     // STEP 2
   void updateDetails({
-  required String category,
+  required String type,
   required String priority,
   required bool reminderEnabled,
   DateTime? reminderDateTime,
   required String notes,
 }) {
   state = state.copyWith(
-    category: category,
+    type: type,
     priority: priority,
     reminderEnabled: reminderEnabled,
     reminderDateTime: reminderDateTime,
@@ -75,14 +75,14 @@ class ChecklistController extends Notifier<ChecklistState> {
 }
 
   /// STEP 3
-  void addCategory(String category) {
-    if (state.categories.contains(category)) return;
+  void addCategory(String type) {
+    if (state.categories.contains(type)) return;
 
-    final updatedCategories = [...state.categories, category];
+    final updatedCategories = [...state.categories, type];
 
     final updatedItems = Map<String, List<ChecklistItem>>.from(state.items);
 
-    updatedItems[category] = [];
+    updatedItems[type] = [];
 
     state = state.copyWith(
       categories: updatedCategories,
