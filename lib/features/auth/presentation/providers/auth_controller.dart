@@ -42,4 +42,7 @@ class AuthController extends AsyncNotifier<UserModel?> {
 
     state = const AsyncData(null);
   }
+  Future<UserModel?> getCurrentUser() async {
+    return await _repository.getCurrentUser();
+  }
 }

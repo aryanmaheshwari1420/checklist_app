@@ -22,7 +22,7 @@ class AuthGate extends StatelessWidget {
 
         // Logged In
         if (snapshot.hasData) {
-          return const DashboardScreen();
+          return  DashboardScreen();
         }
 
         // Logged Out

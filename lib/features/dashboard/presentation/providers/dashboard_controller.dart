@@ -19,3 +19,7 @@ class DashboardController extends Notifier<void> {
     return repository.getUserChecklists();
   }
 }
+
+// no state here.
+
+// Dashboard is just reading.

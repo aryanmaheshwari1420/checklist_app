@@ -27,6 +27,9 @@ class UserModel {
       'updatedAt': updatedAt,
     };
   }
+  
+  String get fullName => "$firstName $lastName";
+
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
