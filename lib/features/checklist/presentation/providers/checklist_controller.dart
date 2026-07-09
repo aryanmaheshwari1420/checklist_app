@@ -42,6 +42,20 @@ class ChecklistController extends Notifier<ChecklistState> {
       return null;
     }
   }
+  Future<void> loadChecklist(ChecklistModel checklist) async {
+  state = ChecklistState(
+    title: checklist.title,
+    description: checklist.description,
+    dueDate: checklist.dueDate,
+    type: checklist.type,
+    priority: checklist.priority,
+    reminderEnabled: checklist.reminderEnabled,
+    reminderDateTime: checklist.reminderDateTime,
+    notes: checklist.notes,
+    categories: checklist.categories,
+    items: checklist.items,
+  );
+}
 
 
   /// STEP 1

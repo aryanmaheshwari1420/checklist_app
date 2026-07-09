@@ -1,11 +1,22 @@
 import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_repository_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CreateCheckListScreen extends ConsumerStatefulWidget {
-  const CreateCheckListScreen({super.key});
+  final String? checklistId;
+  final ChecklistMode mode;
+  final bool showSkip;
+
+  const CreateCheckListScreen({
+    super.key,
+    this.mode = ChecklistMode.create,
+    this.checklistId,
+    this.showSkip = false,
+  });
 
   @override
   ConsumerState<CreateCheckListScreen> createState() =>
@@ -47,11 +58,11 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
   void initState() {
     super.initState();
 
-    final checklist = ref.read(checklistControllerProvider);
-
-    nameController.text = checklist.title;
-    descriptionController.text = checklist.description;
-    selectedDate = checklist.dueDate;
+    if (widget.mode == ChecklistMode.edit) {
+      Future.microtask(() async {
+        await loadChecklist();
+      });
+    }
   }
 
   @override
@@ -64,24 +75,35 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
         elevation: 0,
         centerTitle: true,
         leading: const BackButton(color: Colors.black),
-        title: const Text(
-          "Create Checklist",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              ref.read(checklistControllerProvider.notifier).clear();
-
-              ref.invalidate(dashboardProvider);
-              Navigator.pushNamedAndRemoveUntil(context, AppRoutes.dashboard,(routes)=>false);
-            },
-            child: const Text(
-              "Skip",
-              style: TextStyle(color: Colors.deepPurple),
-            ),
+        title: Text(
+          widget.mode == ChecklistMode.create
+              ? "Create Checklist"
+              : "Edit Checklist",
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
           ),
-        ],
+        ),
+        actions: widget.showSkip
+            ? [
+                TextButton(
+                  onPressed: () {
+                    ref.read(checklistControllerProvider.notifier).clear();
+
+                    ref.invalidate(dashboardProvider);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.dashboard,
+                      (routes) => false,
+                    );
+                  },
+                  child: const Text(
+                    "Skip",
+                    style: TextStyle(color: Colors.deepPurple),
+                  ),
+                ),
+              ]
+            : null,
       ),
 
       body: SafeArea(
@@ -112,19 +134,26 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
                 const SizedBox(height: 20),
 
-                const Center(
+                Center(
                   child: Text(
-                    "Let's create a new checklist",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    widget.mode == ChecklistMode.create
+                        ? "Let's create a new checklist"
+                        : "Edit Checklist",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 8),
 
-                const Center(
+                Center(
                   child: Text(
-                    "Fill in the basic details to get started.",
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                    widget.mode == ChecklistMode.create
+                        ? "Fill in the basic details to get started."
+                        : "Update your checklist information.",
+                    style: const TextStyle(color: Colors.grey, fontSize: 15),
                   ),
                 ),
 
@@ -241,9 +270,9 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                         );
                       }
                     },
-                    child: const Text(
-                      "Next",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    child: Text(
+                      widget.mode == ChecklistMode.create ? "Next" : "Save",
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ),
@@ -254,4 +283,26 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
       ),
     );
   }
+
+  Future<void> loadChecklist() async {
+    final checklist = await ref
+        .read(checklistRepositoryProvider)
+        .getChecklistById(widget.checklistId!);
+
+    ref.read(checklistControllerProvider.notifier).loadChecklist(checklist);
+  
+      if (!mounted) return;
+
+
+    setState(() {
+      nameController.text = checklist.title;
+      descriptionController.text = checklist.description;
+      selectedDate = checklist.dueDate;
+    });
+  }
 }
+
+
+// Why Future.microtask?
+
+// Because ref.read() directly initState me state update karega. Riverpod recommends scheduling it after initialization to avoid lifecycle issues.

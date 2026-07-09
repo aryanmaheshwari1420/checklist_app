@@ -1,3 +1,5 @@
+import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +70,13 @@ class ChecklistOverviewScreen extends ConsumerWidget {
 
             actions: [
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.createChecklist,
+                    arguments: {"mode": ChecklistMode.edit, "showSkip": false, "checklistId": checklistId},
+                  );
+                },
                 icon: const Icon(Icons.edit_outlined, color: Colors.black),
               ),
 

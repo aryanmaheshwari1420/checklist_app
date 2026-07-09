@@ -7,16 +7,16 @@ class ChecklistHeader extends StatelessWidget {
   const ChecklistHeader({super.key, required this.checklist});
 
   String formatDate(DateTime date) {
-  return DateFormat('dd MMMM yyyy').format(date);
-}
-
-String getDueDateText(DateTime? dueDate) {
-  if (dueDate == null ) {
-    return "No due date";
+    return DateFormat('dd MMMM yyyy').format(date);
   }
 
-  return formatDate(dueDate);
-}
+  String getDueDateText(DateTime? dueDate) {
+    if (dueDate == null) {
+      return "No due date";
+    }
+
+    return formatDate(dueDate);
+  }
 
   double calculateChecklistProgress(ChecklistModel checklist) {
     int total = 0;
@@ -48,7 +48,7 @@ String getDueDateText(DateTime? dueDate) {
             const SizedBox(width: 6),
 
             Text(
-  "Due: ${getDueDateText(checklist.dueDate)}",
+              "Due: ${getDueDateText(checklist.dueDate)}",
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black87,

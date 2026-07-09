@@ -33,6 +33,12 @@ class ChecklistRepository {
 
   Future<void> updateChecklist(ChecklistModel checklist) async {
     // Later
+    await _firestore
+      .collection("users")
+      .doc(_auth.currentUser!.uid)
+      .collection("checklists")
+      .doc(checklist.id)
+      .update(checklist.toMap());
   }
 
   Future<void> deleteChecklist(String checklistId) async {

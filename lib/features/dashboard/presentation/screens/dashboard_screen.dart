@@ -1,7 +1,7 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/dashboard_app_bar.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/dashboard_bottom_navigation.dart';
@@ -76,7 +76,11 @@ class DashboardScreen extends ConsumerWidget {
           floatingActionButton: FloatingActionButton(
             backgroundColor: const Color(0xff5B3DF5),
             onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.createChecklist);
+              Navigator.pushNamed(
+                context,
+                AppRoutes.createChecklist,
+                arguments: {"mode": ChecklistMode.create, "showSkip": false},
+              );
             },
             child: const Icon(Icons.add, color: Colors.white),
           ),

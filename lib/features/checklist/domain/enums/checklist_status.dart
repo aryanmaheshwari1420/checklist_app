@@ -1,0 +1,4 @@
+enum ChecklistMode {
+  create,
+  edit,
+}

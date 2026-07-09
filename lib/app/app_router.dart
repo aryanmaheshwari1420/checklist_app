@@ -1,6 +1,7 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/screens/login_screens/loginscreen.dart';
 import 'package:checklist_app/features/auth/presentation/screens/login_screens/sign_up_screen.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/category_selection_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_details_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_items_screen.dart';
@@ -8,6 +9,7 @@ import 'package:checklist_app/features/checklist/presentation/screens/checklist_
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -22,23 +24,31 @@ class AppRouter {
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
 
-      case AppRoutes.createChecklist:
-        return MaterialPageRoute(builder: (_) => const CreateCheckListScreen());
-
       case AppRoutes.checklistDetails:
         return MaterialPageRoute(builder: (_) => const MoreDetailScreen());
 
-        case AppRoutes.addCategories:
+      case AppRoutes.addCategories:
         return MaterialPageRoute(builder: (_) => const AddCategoryScreen());
 
-        case AppRoutes.addItems:
+      case AppRoutes.addItems:
         return MaterialPageRoute(builder: (_) => const AddITemCategoryScreen());
-        
-        case AppRoutes.viewChecklist:
+
+      case AppRoutes.viewChecklist:
         final checklistId = settings.arguments as String;
 
         return MaterialPageRoute(
           builder: (_) => ChecklistOverviewScreen(checklistId: checklistId),
+        );
+
+      case AppRoutes.createChecklist:
+        final args = settings.arguments as Map<String, dynamic>?;
+
+        return MaterialPageRoute(
+          builder: (_) => CreateCheckListScreen(
+            mode: args?["mode"] ?? ChecklistMode.create,
+            checklistId: args?["checklistId"],
+            showSkip: args?["showSkip"] ?? false,
+          ),
         );
 
       case AppRoutes.success:

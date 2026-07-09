@@ -1,4 +1,5 @@
 import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +100,10 @@ class SuccessScreen extends ConsumerWidget {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       AppRoutes.createChecklist,
-                      (_) => false,
+                      (route) => false,
+                      arguments:{
+                        "mode":ChecklistMode.create,
+                      }
                     );
                   },
                   child: const Text(

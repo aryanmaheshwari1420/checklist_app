@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/providers/auth_controller.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +30,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       next.whenOrNull(
         data: (user) {
           if (user != null) {
-            Navigator.pushReplacementNamed(context, AppRoutes.createChecklist);
+            Navigator.pushReplacementNamed(
+              context,
+              AppRoutes.createChecklist,
+              arguments: {"mode": ChecklistMode.create, "showSkip": true},
+            );
           }
         },
         error: (error, stackTrace) {
