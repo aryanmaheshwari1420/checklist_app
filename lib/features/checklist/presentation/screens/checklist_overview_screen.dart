@@ -1,6 +1,7 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
+import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,145 +45,168 @@ class ChecklistOverviewScreen extends ConsumerWidget {
             body: Center(child: Text("Checklist not found.")),
           );
         }
-        return Scaffold(
-          backgroundColor: const Color(0xffF7F7F7),
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
 
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.white,
+            ref.invalidate(dashboardProvider);
 
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.dashboard,
+              (route) => false,
+            );
+          },
+          child: Scaffold(
+            backgroundColor: const Color(0xffF7F7F7),
 
-            centerTitle: true,
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.white,
 
-            title: Text(
-              checklist.title,
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            actions: [
-              IconButton(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () {
-                  Navigator.pushNamed(
+                  ref.invalidate(dashboardProvider);
+                  Navigator.pushNamedAndRemoveUntil(
                     context,
-                    AppRoutes.createChecklist,
-                    arguments: {"mode": ChecklistMode.edit, "showSkip": false, "checklistId": checklistId},
+                    AppRoutes.dashboard,
+                    (route) => false,
                   );
                 },
-                icon: const Icon(Icons.edit_outlined, color: Colors.black),
               ),
 
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.black),
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: "delete", child: Text("Delete")),
-                ],
+              centerTitle: true,
+
+              title: Text(
+                checklist.title,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ],
-          ),
 
-          floatingActionButton: FloatingActionButton.extended(
-            backgroundColor: const Color(0xff5B3DF5),
-
-            onPressed: () {},
-
-            icon: const Icon(Icons.add, color: Colors.white),
-
-            label: const Text(
-              "Add Item",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-
-          body: Padding(
-            padding: const EdgeInsets.all(20),
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                ChecklistHeader(checklist: checklist),
-
-                const SizedBox(height: 25),
-
-                ChecklistProgressBar(
-                  progress: calculateChecklistProgress(checklist),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.createChecklist,
+                      arguments: {
+                        "mode": ChecklistMode.edit,
+                        "showSkip": false,
+                        "checklistId": checklistId,
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.edit_outlined, color: Colors.black),
                 ),
 
-                const SizedBox(height: 25),
-
-                Text(
-                  "Checklist for our ${checklist.title} preparation.",
-                  style: const TextStyle(fontSize: 15, color: Colors.black87),
-                ),
-
-                const SizedBox(height: 30),
-
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                  children: [
-                    Text(
-                      "Categories",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-
-                    Text(
-                      "Edit Order",
-                      style: TextStyle(
-                        color: Color(0xff5B3DF5),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.black),
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(value: "delete", child: Text("Delete")),
                   ],
                 ),
+              ],
+            ),
 
-                const SizedBox(height: 18),
+            floatingActionButton: FloatingActionButton.extended(
+              backgroundColor: const Color(0xff5B3DF5),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: checklist.categories.length,
-                          itemBuilder: (context, index) {
-                            final category = checklist.categories[index];
+              onPressed: () {},
 
-                            final items = checklist.items[category] ?? [];
+              icon: const Icon(Icons.add, color: Colors.white),
 
-                            final completed = items
-                                .where((item) => item.checked)
-                                .length;
+              label: const Text(
+                "Add Item",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
 
-                            return CategoryProgressTile(
-                              icon: Icons.folder_outlined,
-                              title: category,
-                              completed: completed,
-                              total: items.length,
-                              onTap: () {
-                                // next screen
-                              },
-                            );
-                          },
+            body: Padding(
+              padding: const EdgeInsets.all(20),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  ChecklistHeader(checklist: checklist),
+
+                  const SizedBox(height: 25),
+
+                  ChecklistProgressBar(
+                    progress: calculateChecklistProgress(checklist),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  Text(
+                    "Checklist for our ${checklist.title} preparation.",
+                    style: const TextStyle(fontSize: 15, color: Colors.black87),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+                      Text(
+                        "Categories",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
                         ),
-                      ],
+                      ),
+
+                      Text(
+                        "Edit Order",
+                        style: TextStyle(
+                          color: Color(0xff5B3DF5),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: checklist.categories.length,
+                            itemBuilder: (context, index) {
+                              final category = checklist.categories[index];
+
+                              final items = checklist.items[category] ?? [];
+
+                              final completed = items
+                                  .where((item) => item.checked)
+                                  .length;
+
+                              return CategoryProgressTile(
+                                icon: Icons.folder_outlined,
+                                title: category,
+                                completed: completed,
+                                total: items.length,
+                                onTap: () {
+                                  // next screen
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
