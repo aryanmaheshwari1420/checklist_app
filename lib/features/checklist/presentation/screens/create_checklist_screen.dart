@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
+import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -67,6 +68,20 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
           "Create Checklist",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              ref.read(checklistControllerProvider.notifier).clear();
+
+              ref.invalidate(dashboardProvider);
+              Navigator.pushNamedAndRemoveUntil(context, AppRoutes.dashboard,(routes)=>false);
+            },
+            child: const Text(
+              "Skip",
+              style: TextStyle(color: Colors.deepPurple),
+            ),
+          ),
+        ],
       ),
 
       body: SafeArea(
