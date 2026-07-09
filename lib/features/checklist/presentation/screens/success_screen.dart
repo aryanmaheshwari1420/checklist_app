@@ -1,16 +1,28 @@
+import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
+import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:flutter/material.dart';
-// import 'home_screen.dart'; // Replace with your actual home/dashboard screen
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SuccessScreen extends StatelessWidget {
-
+class SuccessScreen extends ConsumerWidget {
   final String checklistId;
-  const SuccessScreen({super.key,required this.checklistId});
+  const SuccessScreen({super.key, required this.checklistId});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context,WidgetRef ref) {
+    return PopScope(canPop: false,
+  onPopInvokedWithResult: (didPop, result) {
+    if (didPop) return;
+
+      ref.invalidate(dashboardProvider);
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.dashboard,
+      (route) => false,
+    );
+  },child:
+     Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
       body: SafeArea(
@@ -19,32 +31,21 @@ class SuccessScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
               Container(
                 height: 110,
                 width: 110,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.green,
-                    width: 3,
-                  ),
+                  border: Border.all(color: Colors.green, width: 3),
                 ),
-                child: const Icon(
-                  Icons.check,
-                  size: 60,
-                  color: Colors.green,
-                ),
+                child: const Icon(Icons.check, size: 60, color: Colors.green),
               ),
 
               const SizedBox(height: 40),
 
               const Text(
                 "Checklist Created!",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 12),
@@ -52,11 +53,7 @@ class SuccessScreen extends StatelessWidget {
               const Text(
                 "Your checklist has been\ncreated successfully.",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
               ),
 
               const SizedBox(height: 50),
@@ -75,18 +72,14 @@ class SuccessScreen extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ChecklistOverviewScreen(checklistId: checklistId),
+                        builder: (_) =>
+                            ChecklistOverviewScreen(checklistId: checklistId),
                       ),
                     );
-                    
-
                   },
                   child: const Text(
                     "View Checklist",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 17),
                   ),
                 ),
               ),
@@ -103,15 +96,11 @@ class SuccessScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const CreateCheckListScreen(),
-                      ),
-                      (route) => false,
+                      AppRoutes.createChecklist,
+                      (_) => false,
                     );
-
                   },
                   child: const Text(
                     "Add Another",
@@ -127,6 +116,6 @@ class SuccessScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }

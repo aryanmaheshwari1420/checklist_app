@@ -111,9 +111,9 @@ class ChecklistOverviewScreen extends ConsumerWidget {
 
                 const SizedBox(height: 25),
 
-                const Text(
-                  "Checklist for our Bali trip preparation.",
-                  style: TextStyle(fontSize: 15, color: Colors.black87),
+                Text(
+                  "Checklist for our ${checklist.title} preparation.",
+                  style: const TextStyle(fontSize: 15, color: Colors.black87),
                 ),
 
                 const SizedBox(height: 30),

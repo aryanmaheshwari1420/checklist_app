@@ -1,5 +1,4 @@
-import 'package:checklist_app/features/checklist/presentation/screens/category_selection_screen.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
+import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +19,7 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
     "Work",
     "Shopping",
     "Finance",
-    "Health"
+    "Health",
   ];
 
   String selectedType = "Travel";
@@ -37,9 +36,9 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
   void initState() {
     super.initState();
 
-    final checklist =  ref.read(checklistControllerProvider);
+    final checklist = ref.read(checklistControllerProvider);
 
-    if(checklist.type.isNotEmpty){
+    if (checklist.type.isNotEmpty) {
       selectedType = checklist.type;
     }
 
@@ -47,16 +46,17 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
     reminder = checklist.reminderEnabled;
     reminderDate = checklist.reminderDateTime;
 
-    if(checklist.reminderDateTime!=null){
+    if (checklist.reminderDateTime != null) {
       reminderTime = TimeOfDay.fromDateTime(checklist.reminderDateTime!);
     }
     notesController.text = checklist.notes;
   }
+
   @override
-void dispose() {
-  notesController.dispose();
-  super.dispose();
-}
+  void dispose() {
+    notesController.dispose();
+    super.dispose();
+  }
 
   Future<void> pickReminderDate() async {
     final date = await showDatePicker(
@@ -69,16 +69,16 @@ void dispose() {
     if (date != null) {
       setState(() {
         if (reminderTime != null) {
-  reminderDate = DateTime(
-    date.year,
-    date.month,
-    date.day,
-    reminderTime!.hour,
-    reminderTime!.minute,
-  );
-} else {
-  reminderDate = date;
-}
+          reminderDate = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            reminderTime!.hour,
+            reminderTime!.minute,
+          );
+        } else {
+          reminderDate = date;
+        }
       });
     }
   }
@@ -93,15 +93,15 @@ void dispose() {
       setState(() {
         reminderTime = time;
 
-if (reminderDate != null) {
-  reminderDate = DateTime(
-    reminderDate!.year,
-    reminderDate!.month,
-    reminderDate!.day,
-    time.hour,
-    time.minute,
-  );
-}
+        if (reminderDate != null) {
+          reminderDate = DateTime(
+            reminderDate!.year,
+            reminderDate!.month,
+            reminderDate!.day,
+            time.hour,
+            time.minute,
+          );
+        }
       });
     }
   }
@@ -112,7 +112,7 @@ if (reminderDate != null) {
     return ChoiceChip(
       label: Text(value),
       selected: selected,
-      selectedColor: const Color(0xff5B3DF5), 
+      selectedColor: const Color(0xff5B3DF5),
       labelStyle: TextStyle(
         color: selected ? Colors.white : Colors.black,
         fontWeight: FontWeight.w600,
@@ -125,10 +125,8 @@ if (reminderDate != null) {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
@@ -139,10 +137,7 @@ if (reminderDate != null) {
         centerTitle: true,
         title: const Text(
           "Create Checklist",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
       ),
 
@@ -152,7 +147,6 @@ if (reminderDate != null) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const SizedBox(height: 10),
 
               const Center(
@@ -177,12 +171,7 @@ if (reminderDate != null) {
 
               const SizedBox(height: 35),
 
-              const Text(
-                "Type",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              const Text("Type", style: TextStyle(fontWeight: FontWeight.w600)),
 
               const SizedBox(height: 8),
 
@@ -216,9 +205,7 @@ if (reminderDate != null) {
 
               const Text(
                 "Priority",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
 
               const SizedBox(height: 12),
@@ -236,7 +223,6 @@ if (reminderDate != null) {
 
               Row(
                 children: [
-
                   const Expanded(
                     child: Text(
                       "Reminder",
@@ -269,12 +255,10 @@ if (reminderDate != null) {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      border:
-                          Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: Row(
                       children: [
-
                         const Icon(Icons.calendar_today),
 
                         const SizedBox(width: 15),
@@ -300,12 +284,10 @@ if (reminderDate != null) {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      border:
-                          Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: Row(
                       children: [
-
                         const Icon(Icons.access_time),
 
                         const SizedBox(width: 15),
@@ -327,9 +309,7 @@ if (reminderDate != null) {
 
               const Text(
                 "Notes (Optional)",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
 
               const SizedBox(height: 8),
@@ -351,24 +331,16 @@ if (reminderDate != null) {
 
               Row(
                 children: [
-
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 55),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pop(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const CreateCheckListScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.createChecklist);
                       },
                       child: const Text("Back"),
                     ),
@@ -380,31 +352,23 @@ if (reminderDate != null) {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(0, 55),
-                        backgroundColor:
-                            const Color(0xff5B3DF5),
+                        backgroundColor: const Color(0xff5B3DF5),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       onPressed: () {
+                        ref
+                            .read(checklistControllerProvider.notifier)
+                            .updateDetails(
+                              type: selectedType,
+                              priority: selectedPriority,
+                              reminderEnabled: reminder,
+                              reminderDateTime: reminderDate,
+                              notes: notesController.text.trim(),
+                            );
 
-
-                        ref.read(checklistControllerProvider.notifier).updateDetails(
-                          type: selectedType,
-                          priority: selectedPriority,
-                          reminderEnabled: reminder,
-                          reminderDateTime: reminderDate,
-                          notes: notesController.text.trim(),
-                        );
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const AddCategoryScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.addCategories);
                       },
                       child: const Text(
                         "Next",

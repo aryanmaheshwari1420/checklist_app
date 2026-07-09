@@ -1,5 +1,5 @@
+import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/providers/auth_controller.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,46 +21,38 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final confirmPasswordController = TextEditingController();
   late final ProviderSubscription<AsyncValue> _authListener;
 
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  _authListener = ref.listenManual(
-    authControllerProvider,
-    (previous, next) {
+    _authListener = ref.listenManual(authControllerProvider, (previous, next) {
       next.whenOrNull(
         data: (user) {
           if (user != null) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const CreateCheckListScreen(),
-              ),
-            );
+            Navigator.pushReplacementNamed(context, AppRoutes.createChecklist);
           }
         },
         error: (error, stackTrace) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.toString())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
         },
       );
-    },
-  );
-}
+    });
+  }
 
-@override
-void dispose() {
-  _authListener.close();
+  @override
+  void dispose() {
+    _authListener.close();
 
-  firstNameController.dispose();
-  lastNameController.dispose();
-  emailController.dispose();
-  passwordController.dispose();
-  confirmPasswordController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
 
-  super.dispose();
-}
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +70,7 @@ void dispose() {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Form(
           key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -218,7 +210,7 @@ void dispose() {
                   onPressed: loading
                       ? null
                       : () async {
-                          FocusScope.of(context).unfocus(); 
+                          FocusScope.of(context).unfocus();
                           if (!_formKey.currentState!.validate()) return;
 
                           await ref

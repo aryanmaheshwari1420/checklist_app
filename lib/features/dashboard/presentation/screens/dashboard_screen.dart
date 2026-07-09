@@ -1,3 +1,4 @@
+import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
@@ -43,15 +44,13 @@ class DashboardScreen extends ConsumerWidget {
 
           for (final items in checklist.items.values) {
             checklistTotal += items.length;
-            checklistCompleted +=
-                items.where((e) => e.checked).length;
+            checklistCompleted += items.where((e) => e.checked).length;
           }
 
           totalItems += checklistTotal;
           checkedItems += checklistCompleted;
 
-          if (checklistTotal > 0 &&
-              checklistCompleted == checklistTotal) {
+          if (checklistTotal > 0 && checklistCompleted == checklistTotal) {
             completed++;
           } else {
             pending++;
@@ -77,17 +76,9 @@ class DashboardScreen extends ConsumerWidget {
           floatingActionButton: FloatingActionButton(
             backgroundColor: const Color(0xff5B3DF5),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateCheckListScreen(),
-                ),
-              );
+              Navigator.pushNamed(context, AppRoutes.createChecklist);
             },
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
 
           bottomNavigationBar: DashboardBottomNavigation(
@@ -103,7 +94,7 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GreetingSection(
-                    name: user?.firstName??"User",
+                    name: user?.firstName ?? "User",
                     hasChecklist: hasChecklist,
                   ),
 
@@ -169,55 +160,49 @@ class DashboardScreen extends ConsumerWidget {
                           const Padding(
                             padding: EdgeInsets.only(top: 50),
                             child: Center(
-                              child: Text(
-                                "No checklists created yet.",
-                              ),
+                              child: Text("No checklists created yet."),
                             ),
                           )
                         else
-                          ...checklists.map(
-                            (checklist) {
-                              int totalItems = 0;
-                              int completedItems = 0;
+                          ...checklists.map((checklist) {
+                            int totalItems = 0;
+                            int completedItems = 0;
 
-                              for (final items
-                                  in checklist.items.values) {
-                                totalItems += items.length;
-                                completedItems += items
-                                    .where((e) => e.checked)
-                                    .length;
-                              }
+                            for (final items in checklist.items.values) {
+                              totalItems += items.length;
+                              completedItems += items
+                                  .where((e) => e.checked)
+                                  .length;
+                            }
 
-                              String status;
+                            String status;
 
-                              if (completedItems == totalItems &&
-                                  totalItems > 0) {
-                                status = "Completed";
-                              } else if (completedItems == 0) {
-                                status = "Pending";
-                              } else {
-                                status = "In Progress";
-                              }
+                            if (completedItems == totalItems &&
+                                totalItems > 0) {
+                              status = "Completed";
+                            } else if (completedItems == 0) {
+                              status = "Pending";
+                            } else {
+                              status = "In Progress";
+                            }
 
-                              return RecentChecklistCard(
-                                title: checklist.title,
-                                completed: completedItems,
-                                total: totalItems,
-                                status: status,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          ChecklistOverviewScreen(
-                                        checklistId: checklist.id!,
-                                      ),
+                            return RecentChecklistCard(
+                              title: checklist.title,
+                              completed: completedItems,
+                              total: totalItems,
+                              status: status,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChecklistOverviewScreen(
+                                      checklistId: checklist.id!,
                                     ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
+                                  ),
+                                );
+                              },
+                            );
+                          }),
                       ],
                     ),
                   ),

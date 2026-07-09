@@ -1,5 +1,4 @@
-import 'package:checklist_app/features/checklist/presentation/screens/checklist_items_screen.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/checklist_details_screen.dart';
+import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,9 +11,8 @@ class AddCategoryScreen extends ConsumerStatefulWidget {
 }
 
 class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
-
-  List<String> get categories => ref.read(checklistControllerProvider).categories;
-
+  List<String> get categories =>
+      ref.read(checklistControllerProvider).categories;
 
   // -------------------- ADD CATEGORY --------------------
 
@@ -104,11 +102,11 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                   // });
 
                   ref
-    .read(checklistControllerProvider.notifier)
-    .updateCategory(
-      oldName: categories[index],
-      newName: value,
-    );
+                      .read(checklistControllerProvider.notifier)
+                      .updateCategory(
+                        oldName: categories[index],
+                        newName: value,
+                      );
                 }
 
                 Navigator.pop(context);
@@ -148,10 +146,8 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                   // categories.removeAt(index);
 
                   ref
-    .read(checklistControllerProvider.notifier)
-    .removeCategory(
-      categories[index],
-    );
+                      .read(checklistControllerProvider.notifier)
+                      .removeCategory(categories[index]);
                 });
 
                 Navigator.pop(context);
@@ -167,12 +163,10 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     final categories = ref.watch(checklistControllerProvider).categories;
-     
+
     return Scaffold(
       backgroundColor: const Color(0xffF7F7F7),
 
@@ -265,12 +259,9 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pop(
+                        Navigator.pushNamed(
                           context,
-
-                          MaterialPageRoute(
-                            builder: (_) => const MoreDetailScreen(),
-                          ),
+                          AppRoutes.checklistDetails,
                         );
                       },
 
@@ -289,12 +280,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                       onPressed: categories.isEmpty
                           ? null
                           : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AddITemCategoryScreen(),
-                                ),
-                              );
+                              Navigator.pushNamed(context, AppRoutes.addItems);
                             },
 
                       child: const Text(

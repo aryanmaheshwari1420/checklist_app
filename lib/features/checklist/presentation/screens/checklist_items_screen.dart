@@ -1,3 +1,4 @@
+import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
@@ -351,13 +352,10 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       if (!mounted) return;
 
                       if (checklistId != null) {
-                        Navigator.pushAndRemoveUntil(
+                        Navigator.pushReplacementNamed(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                SuccessScreen(checklistId: checklistId),
-                          ),
-                          (route) => false,
+                          AppRoutes.success,
+                          arguments: checklistId,
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
