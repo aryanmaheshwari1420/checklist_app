@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
@@ -376,7 +374,10 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       Navigator.pushReplacementNamed(
                         context,
                         AppRoutes.success,
-                        arguments: checklistId,
+                        arguments: {
+                          "checklistId": checklistId,
+                          "mode": widget.mode,
+                        },
                       );
                     },
                     child: Text(

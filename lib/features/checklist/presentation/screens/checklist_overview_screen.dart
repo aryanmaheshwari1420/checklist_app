@@ -11,11 +11,16 @@ import '../widgets/checklist_header.dart';
 import '../widgets/checklist_progress_bar.dart';
 import '../widgets/category_progress_tile.dart';
 
-class ChecklistOverviewScreen extends ConsumerWidget {
+class ChecklistOverviewScreen extends ConsumerStatefulWidget {
   final String checklistId;
 
   const ChecklistOverviewScreen({super.key, required this.checklistId});
 
+  @override
+  ConsumerState<ChecklistOverviewScreen> createState() => _ChecklistOverviewScreenState();
+}
+
+class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScreen> {
   double calculateChecklistProgress(ChecklistModel checklist) {
     int total = 0;
     int completed = 0;
@@ -28,11 +33,19 @@ class ChecklistOverviewScreen extends ConsumerWidget {
 
     return total == 0 ? 0.0 : completed / total;
   }
-  
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final checklistAsync = ref.watch(checklistByIdProvider(checklistId));
+  void initState() {
+    super.initState();
+     Future.microtask(() {
+      ref.invalidate(checklistControllerProvider);
+    });
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final checklistAsync = ref.watch(checklistByIdProvider(widget.checklistId));
 
     return checklistAsync.when(
       loading: () =>
@@ -53,6 +66,8 @@ class ChecklistOverviewScreen extends ConsumerWidget {
             if (didPop) return;
 
             ref.invalidate(dashboardProvider);
+            ref.invalidate(checklistByIdProvider(widget.checklistId));
+            ref.invalidate(checklistControllerProvider);
 
             Navigator.pushNamedAndRemoveUntil(
               context,
@@ -98,7 +113,7 @@ class ChecklistOverviewScreen extends ConsumerWidget {
                       arguments: {
                         "mode": ChecklistMode.edit,
                         "showSkip": false,
-                        "checklistId": checklistId,
+                        "checklistId": widget.checklistId,
                       },
                     );
                   },
@@ -106,32 +121,29 @@ class ChecklistOverviewScreen extends ConsumerWidget {
                 ),
 
                 PopupMenuButton<String>(
-  onSelected: (value) {
-    switch (value) {
-      case "delete":
-        showDeleteDialog(ref, context);
-        break;
-    }
-  },
-  itemBuilder: (_) => const [
-    PopupMenuItem(
-      value: "delete",
-      child: Row(
-        children: [
-          Icon(
-            Icons.delete_outline,
-            color: Colors.red,
-          ),
-          SizedBox(width: 10),
-          Text(
-            "Delete Checklist",
-            style: TextStyle(color: Colors.red),
-          ),
-        ],
-      ),
-    ),
-  ],
-)
+                  onSelected: (value) {
+                    switch (value) {
+                      case "delete":
+                        showDeleteDialog(ref, context);
+                        break;
+                    }
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: "delete",
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, color: Colors.red),
+                          SizedBox(width: 10),
+                          Text(
+                            "Delete Checklist",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
 
@@ -236,70 +248,62 @@ class ChecklistOverviewScreen extends ConsumerWidget {
       },
     );
   }
-  
+
   Future<void> showDeleteDialog(WidgetRef ref, BuildContext context) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (_) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          "Delete Checklist",
-        ),
-        content: const Text(
-          "Are you sure you want to delete this checklist?\n\nThis action cannot be undone.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context, false);
-            },
-            child: const Text("Cancel"),
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () {
-              Navigator.pop(context, true);
-            },
-            child: const Text(
-              "Delete",
-              style: TextStyle(color: Colors.white),
-            ),
+          title: const Text("Delete Checklist"),
+          content: const Text(
+            "Are you sure you want to delete this checklist?\n\nThis action cannot be undone.",
           ),
-        ],
-      );
-    },
-  );
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: const Text(
+                "Delete",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
 
-  if (confirmed != true) return;
+    if (confirmed != true) return;
 
-  await deleteChecklist(ref,context);
-}
-Future<void> deleteChecklist(WidgetRef ref, BuildContext context) async {
-  await ref
-      .read(checklistControllerProvider.notifier)
-      .deleteChecklist(checklistId);
+    await deleteChecklist(ref, context);
+  }
 
-  if (!context.mounted) return;
-  ref.invalidate(dashboardProvider);
+  Future<void> deleteChecklist(WidgetRef ref, BuildContext context) async {
+    await ref
+        .read(checklistControllerProvider.notifier)
+        .deleteChecklist(widget.checklistId);
 
+    if (!context.mounted) return;
+    ref.invalidate(dashboardProvider);
 
-  Navigator.pushNamedAndRemoveUntil(
-    context,
-    AppRoutes.dashboard,
-    (_) => false,
-  );
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.dashboard,
+      (_) => false,
+    );
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        "Checklist deleted successfully.",
-      ),
-    ),
-  );
-}
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Checklist deleted successfully.")),
+    );
+  }
 }

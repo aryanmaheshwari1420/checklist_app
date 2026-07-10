@@ -71,11 +71,14 @@ class AppRouter {
           ),
         );
 
-      case AppRoutes.success:
-        final checklistId = settings.arguments as String;
+        case AppRoutes.success:
+        final args = settings.arguments as Map<String, dynamic>?;
 
         return MaterialPageRoute(
-          builder: (_) => SuccessScreen(checklistId: checklistId),
+          builder: (_) => SuccessScreen(
+            mode: args?["mode"] ?? ChecklistMode.create,
+            checklistId: args?["checklistId"],
+          ),
         );
 
       default:
