@@ -9,7 +9,6 @@ import 'package:checklist_app/features/checklist/presentation/screens/checklist_
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -24,14 +23,35 @@ class AppRouter {
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
 
-      case AppRoutes.checklistDetails:
-        return MaterialPageRoute(builder: (_) => const MoreDetailScreen());
-
       case AppRoutes.addCategories:
-        return MaterialPageRoute(builder: (_) => const AddCategoryScreen());
+        final args = settings.arguments as Map<String, dynamic>?;
+
+        return MaterialPageRoute(
+          builder: (_) => AddCategoryScreen(
+            mode: args?["mode"] ?? ChecklistMode.create,
+            checklistId: args?["checklistId"],
+          ),
+        );
+
+      case AppRoutes.checklistDetails:
+        final args = settings.arguments as Map<String, dynamic>?;
+
+        return MaterialPageRoute(
+          builder: (_) => MoreDetailScreen(
+            mode: args?["mode"] ?? ChecklistMode.create,
+            checklistId: args?["checklistId"],
+          ),
+        );
 
       case AppRoutes.addItems:
-        return MaterialPageRoute(builder: (_) => const AddITemCategoryScreen());
+        final args = settings.arguments as Map<String, dynamic>?;
+
+        return MaterialPageRoute(
+          builder: (_) => AddITemCategoryScreen(
+            mode: args?["mode"] ?? ChecklistMode.create,
+            checklistId: args?["checklistId"],
+          ),
+        );
 
       case AppRoutes.viewChecklist:
         final checklistId = settings.arguments as String;

@@ -1,10 +1,19 @@
 import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddCategoryScreen extends ConsumerStatefulWidget {
-  const AddCategoryScreen({super.key});
+
+  final ChecklistMode mode;
+  final String? checklistId;
+
+  const AddCategoryScreen({
+    super.key,
+    required this.mode,
+    this.checklistId,
+  });
 
   @override
   ConsumerState<AddCategoryScreen> createState() => _AddCategoryScreenState();
@@ -280,7 +289,10 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                       onPressed: categories.isEmpty
                           ? null
                           : () {
-                              Navigator.pushNamed(context, AppRoutes.addItems);
+                              Navigator.pushNamed(context, AppRoutes.addItems,arguments: {
+                                'mode': widget.mode,
+                                'checklistId': widget.checklistId,
+                              });
                             },
 
                       child: const Text(

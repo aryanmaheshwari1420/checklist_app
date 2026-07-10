@@ -5,6 +5,7 @@ import 'package:checklist_app/shared/models/checklist_model.dart';
 
 class ChecklistState {
   // Step 1
+  final String id;
   final String title;
   final String description;
   final DateTime? dueDate;
@@ -23,6 +24,7 @@ class ChecklistState {
   final Map<String, List<ChecklistItem>> items;
 
   const ChecklistState({
+    this.id = '',
     this.title = '',
     this.description = '',
     this.dueDate,
@@ -36,6 +38,7 @@ class ChecklistState {
   });
 
   ChecklistState copyWith({
+    String? id,
     String? title,
     String? description,
     DateTime? dueDate,
@@ -48,6 +51,7 @@ class ChecklistState {
     Map<String, List<ChecklistItem>>? items,
   }) {
     return ChecklistState(
+      id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
@@ -63,6 +67,7 @@ class ChecklistState {
 
   ChecklistModel toChecklistModel() {
     return ChecklistModel(
+      id: id,
       title: title,
       description: description,
       dueDate: dueDate,

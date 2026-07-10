@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/checklist_repository.dart';
+import '../../domain/repository/checklist_repository.dart';
 
 final checklistRepositoryProvider =
     Provider<ChecklistRepository>((ref) {

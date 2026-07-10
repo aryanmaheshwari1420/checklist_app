@@ -263,10 +263,13 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                               description: descriptionController.text.trim(),
                               dueDate: selectedDate,
                             );
-
+                        debugPrint("Checklist updated with ID: $widget.checklistId");
                         Navigator.pushNamed(
                           context,
-                          AppRoutes.checklistDetails,
+                          AppRoutes.checklistDetails,arguments: {
+                                'mode': widget.mode,
+                                'checklistId': widget.checklistId,
+                              }
                         );
                       }
                     },

@@ -1,11 +1,22 @@
+import 'dart:math';
+
 import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
+import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddITemCategoryScreen extends ConsumerStatefulWidget {
-  const AddITemCategoryScreen({super.key});
+  final ChecklistMode mode;
+  final String? checklistId;
+
+  const AddITemCategoryScreen({
+    super.key,
+    required this.mode,
+    this.checklistId,
+  });
 
   @override
   ConsumerState<AddITemCategoryScreen> createState() =>
@@ -344,33 +355,35 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       backgroundColor: const Color(0xff5B3DF5),
                     ),
                     onPressed: () async {
-                      final checklistId = await ref
-                          .read(checklistControllerProvider.notifier)
-                          .createChecklist();
+                      final controller = ref.read(
+                        checklistControllerProvider.notifier,
+                      );
+
+                      String? checklistId;
+
+                      if (widget.mode == ChecklistMode.create) {
+                        checklistId = await controller.createChecklist();
+                      } else {
+                        await controller.updateChecklist();
+                        checklistId = widget.checklistId;
+                        debugPrint("Checklist updated with ID: $checklistId");
+                      }
 
                       if (!mounted) return;
 
-                      if (checklistId != null) {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          AppRoutes.success,
-                          arguments: checklistId,
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Failed to create checklist. Please try again.",
-                            ),
-                          ),
-                        );
-                      }
+                      ref.invalidate(dashboardProvider);
+
+                      Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.success,
+                        arguments: checklistId,
+                      );
                     },
-
-                    child: const Text(
-                      "Create",
-
-                      style: TextStyle(color: Colors.white),
+                    child: Text(
+                      widget.mode == ChecklistMode.create
+                          ? "Create"
+                          : "Save Changes",
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),

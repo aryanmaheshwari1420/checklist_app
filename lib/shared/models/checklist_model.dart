@@ -1,5 +1,5 @@
 class ChecklistModel {
-  final String? id;
+  final String id;
 
   // Step 1
   final String title;
@@ -20,7 +20,7 @@ class ChecklistModel {
   final Map<String, List<ChecklistItem>> items;
 
   const ChecklistModel({
-    this.id,
+    required this.id,
     required this.title,
     required this.description,
     required this.dueDate,
