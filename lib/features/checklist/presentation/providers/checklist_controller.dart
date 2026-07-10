@@ -112,6 +112,12 @@ class ChecklistController extends Notifier<ChecklistState> {
     await repository.updateChecklist(checklist);
   }
 
+  Future<void> deleteChecklist(String checklistId) async {
+    final repository = ref.read(checklistRepositoryProvider);
+
+    await repository.deleteChecklist(checklistId);
+  }
+
   void removeCategory(String category) {
     final updatedCategories = [...state.categories]..remove(category);
 

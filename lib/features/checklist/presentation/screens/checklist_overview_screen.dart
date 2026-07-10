@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
@@ -27,6 +28,7 @@ class ChecklistOverviewScreen extends ConsumerWidget {
 
     return total == 0 ? 0.0 : completed / total;
   }
+  
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,11 +106,32 @@ class ChecklistOverviewScreen extends ConsumerWidget {
                 ),
 
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.black),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: "delete", child: Text("Delete")),
-                  ],
-                ),
+  onSelected: (value) {
+    switch (value) {
+      case "delete":
+        showDeleteDialog(ref, context);
+        break;
+    }
+  },
+  itemBuilder: (_) => const [
+    PopupMenuItem(
+      value: "delete",
+      child: Row(
+        children: [
+          Icon(
+            Icons.delete_outline,
+            color: Colors.red,
+          ),
+          SizedBox(width: 10),
+          Text(
+            "Delete Checklist",
+            style: TextStyle(color: Colors.red),
+          ),
+        ],
+      ),
+    ),
+  ],
+)
               ],
             ),
 
@@ -213,4 +236,70 @@ class ChecklistOverviewScreen extends ConsumerWidget {
       },
     );
   }
+  
+  Future<void> showDeleteDialog(WidgetRef ref, BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          "Delete Checklist",
+        ),
+        content: const Text(
+          "Are you sure you want to delete this checklist?\n\nThis action cannot be undone.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, false);
+            },
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+            child: const Text(
+              "Delete",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed != true) return;
+
+  await deleteChecklist(ref,context);
+}
+Future<void> deleteChecklist(WidgetRef ref, BuildContext context) async {
+  await ref
+      .read(checklistControllerProvider.notifier)
+      .deleteChecklist(checklistId);
+
+  if (!context.mounted) return;
+  ref.invalidate(dashboardProvider);
+
+
+  Navigator.pushNamedAndRemoveUntil(
+    context,
+    AppRoutes.dashboard,
+    (_) => false,
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        "Checklist deleted successfully.",
+      ),
+    ),
+  );
+}
 }

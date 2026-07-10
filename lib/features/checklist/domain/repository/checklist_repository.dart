@@ -43,6 +43,12 @@ class ChecklistRepository {
 
   Future<void> deleteChecklist(String checklistId) async {
     // Later
+    await _firestore
+      .collection("users")
+      .doc(_auth.currentUser!.uid)
+      .collection("checklists")
+      .doc(checklistId)
+      .delete();
   }
 
   Future<ChecklistModel> getChecklistById(

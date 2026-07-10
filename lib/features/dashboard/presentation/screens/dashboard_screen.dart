@@ -200,7 +200,7 @@ class DashboardScreen extends ConsumerWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => ChecklistOverviewScreen(
-                                      checklistId: checklist.id!,
+                                      checklistId: checklist.id,
                                     ),
                                   ),
                                 );
