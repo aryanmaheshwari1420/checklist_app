@@ -150,7 +150,16 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
             floatingActionButton: FloatingActionButton.extended(
               backgroundColor: const Color(0xff5B3DF5),
 
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.addItems,
+                  arguments: {
+                    "mode": ChecklistMode.edit,
+                    "checklistId": widget.checklistId,
+                  },
+                );
+              },
 
               icon: const Icon(Icons.add, color: Colors.white),
 

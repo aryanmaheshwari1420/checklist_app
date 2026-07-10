@@ -252,11 +252,6 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                               value: item.checked,
                               activeColor: const Color(0xff5B3DF5),
                               onChanged: (value) {
-                                // Update through the notifier instead of
-                                // setState mutating a local list — the
-                                // provider is the single source of truth,
-                                // and ref.watch above already rebuilds
-                                // this widget when it changes.
                                 final updatedItem = item.copyWith(
                                   checked: value,
                                 );

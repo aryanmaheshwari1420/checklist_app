@@ -92,126 +92,109 @@ class DashboardScreen extends ConsumerWidget {
           ),
 
           body: SafeArea(
-            child: Padding(
+            child: ListView(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GreetingSection(
-                    name: user?.firstName ?? "User",
-                    hasChecklist: hasChecklist,
-                  ),
+              children: [
+                GreetingSection(
+                  name: user?.firstName ?? "User",
+                  hasChecklist: hasChecklist,
+                ),
 
-                  const SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-                  Row(
-                    children: [
-                      SummaryCard(
-                        title: "Total\nChecklists",
-                        value: total,
-                        icon: Icons.assignment_outlined,
-                        iconColor: Colors.deepPurple,
-                      ),
-                      SummaryCard(
-                        title: "Completed",
-                        value: completed,
-                        icon: Icons.check_circle_outline,
-                        iconColor: Colors.green,
-                      ),
-                      SummaryCard(
-                        title: "Pending",
-                        value: pending,
-                        icon: Icons.access_time,
-                        iconColor: Colors.orange,
-                      ),
-                      const SummaryCard(
-                        title: "Overdue",
-                        value: 0,
-                        icon: Icons.calendar_today_outlined,
-                        iconColor: Colors.red,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        OverallProgressCard(
-                          progress: overallProgress,
-                          completed: checkedItems,
-                          total: totalItems,
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        const QuickActionsSection(),
-
-                        const SizedBox(height: 28),
-
-                        const Text(
-                          "Recent Checklists",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        if (checklists.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 50),
-                            child: Center(
-                              child: Text("No checklists created yet."),
-                            ),
-                          )
-                        else
-                          ...checklists.map((checklist) {
-                            int totalItems = 0;
-                            int completedItems = 0;
-
-                            for (final items in checklist.items.values) {
-                              totalItems += items.length;
-                              completedItems += items
-                                  .where((e) => e.checked)
-                                  .length;
-                            }
-
-                            String status;
-
-                            if (completedItems == totalItems &&
-                                totalItems > 0) {
-                              status = "Completed";
-                            } else if (completedItems == 0) {
-                              status = "Pending";
-                            } else {
-                              status = "In Progress";
-                            }
-
-                            return RecentChecklistCard(
-                              title: checklist.title,
-                              completed: completedItems,
-                              total: totalItems,
-                              status: status,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ChecklistOverviewScreen(
-                                      checklistId: checklist.id,
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          }),
-                      ],
+                Row(
+                  children: [
+                    SummaryCard(
+                      title: "Total\nChecklists",
+                      value: total,
+                      icon: Icons.assignment_outlined,
+                      iconColor: Colors.deepPurple,
                     ),
-                  ),
-                ],
-              ),
+                    SummaryCard(
+                      title: "Completed",
+                      value: completed,
+                      icon: Icons.check_circle_outline,
+                      iconColor: Colors.green,
+                    ),
+                    SummaryCard(
+                      title: "Pending",
+                      value: pending,
+                      icon: Icons.access_time,
+                      iconColor: Colors.orange,
+                    ),
+                    const SummaryCard(
+                      title: "Overdue",
+                      value: 0,
+                      icon: Icons.calendar_today_outlined,
+                      iconColor: Colors.red,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                OverallProgressCard(
+                  progress: overallProgress,
+                  completed: checkedItems,
+                  total: totalItems,
+                ),
+
+                const SizedBox(height: 28),
+
+                const QuickActionsSection(),
+
+                const SizedBox(height: 28),
+
+                const Text(
+                  "Recent Checklists",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 18),
+
+                if (checklists.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 50),
+                    child: Center(child: Text("No checklists created yet.")),
+                  )
+                else
+                  ...checklists.map((checklist) {
+                    int totalItems = 0;
+                    int completedItems = 0;
+
+                    for (final items in checklist.items.values) {
+                      totalItems += items.length;
+                      completedItems += items.where((e) => e.checked).length;
+                    }
+
+                    String status;
+
+                    if (completedItems == totalItems && totalItems > 0) {
+                      status = "Completed";
+                    } else if (completedItems == 0) {
+                      status = "Pending";
+                    } else {
+                      status = "In Progress";
+                    }
+
+                    return RecentChecklistCard(
+                      title: checklist.title,
+                      completed: completedItems,
+                      total: totalItems,
+                      status: status,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChecklistOverviewScreen(
+                              checklistId: checklist.id,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+              ],
             ),
           ),
         );

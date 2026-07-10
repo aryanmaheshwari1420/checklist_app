@@ -176,6 +176,9 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: "Bali Trip",
+                    hintStyle: TextStyle(
+      color: Colors.grey.shade400,
+    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -198,6 +201,9 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   maxLines: 4,
                   decoration: InputDecoration(
                     hintText: "Checklist for our Bali trip preparation.",
+                    hintStyle: TextStyle(
+      color: Colors.grey.shade400,
+    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -232,7 +238,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                         Expanded(
                           child: Text(
                             formattedDate,
-                            style: const TextStyle(fontSize: 16),
+                            style: TextStyle(fontSize: 16,color:Colors.grey.shade400),
                           ),
                         ),
 
@@ -263,18 +269,21 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                               description: descriptionController.text.trim(),
                               dueDate: selectedDate,
                             );
-                        debugPrint("Checklist updated with ID: $widget.checklistId");
+                        debugPrint(
+                          "Checklist updated with ID: $widget.checklistId",
+                        );
                         Navigator.pushNamed(
                           context,
-                          AppRoutes.checklistDetails,arguments: {
-                                'mode': widget.mode,
-                                'checklistId': widget.checklistId,
-                              }
+                          AppRoutes.checklistDetails,
+                          arguments: {
+                            'mode': widget.mode,
+                            'checklistId': widget.checklistId,
+                          },
                         );
                       }
                     },
                     child: Text(
-                      widget.mode == ChecklistMode.create ? "Next" : "Save",
+                      "Save",
                       style: const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
@@ -293,9 +302,8 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
         .getChecklistById(widget.checklistId!);
 
     ref.read(checklistControllerProvider.notifier).loadChecklist(checklist);
-  
-      if (!mounted) return;
 
+    if (!mounted) return;
 
     setState(() {
       nameController.text = checklist.title;
