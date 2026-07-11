@@ -54,10 +54,6 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                 final value = controller.text.trim();
 
                 if (value.isNotEmpty) {
-                  // setState(() {
-                  //   categories.add(value);
-                  // }
-                  // );
                   ref
                       .read(checklistControllerProvider.notifier)
                       .addCategory(value);
@@ -106,10 +102,6 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                 final value = controller.text.trim();
 
                 if (value.isNotEmpty) {
-                  // setState(() {
-                  //   categories[index] = value;
-                  // });
-
                   ref
                       .read(checklistControllerProvider.notifier)
                       .updateCategory(
@@ -152,8 +144,6 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 setState(() {
-                  // categories.removeAt(index);
-
                   ref
                       .read(checklistControllerProvider.notifier)
                       .removeCategory(categories[index]);

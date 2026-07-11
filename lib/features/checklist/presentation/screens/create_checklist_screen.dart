@@ -118,8 +118,8 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
                 Center(
                   child: Container(
-                    width: 90,
-                    height: 90,
+                    width: 70,
+                    height: 70,
                     decoration: BoxDecoration(
                       color: Colors.deepPurple.shade50,
                       shape: BoxShape.circle,
@@ -157,7 +157,31 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 30),
+
+                Center(
+                  child: Text(
+                    widget.mode == ChecklistMode.create
+                        ? "Step 1 of 4"
+                        : "Step 1 of 4",
+                    style: const TextStyle(
+                      color: Color(0xff5B3DF5),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                LinearProgressIndicator(
+                  value: 0.25,
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xff5B3DF5),
+                  backgroundColor: Colors.grey.shade300,
+                ),
+
+                const SizedBox(height: 30),
 
                 const Text(
                   "Checklist Name *",
@@ -176,9 +200,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: "Bali Trip",
-                    hintStyle: TextStyle(
-      color: Colors.grey.shade400,
-    ),
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -201,9 +223,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   maxLines: 4,
                   decoration: InputDecoration(
                     hintText: "Checklist for our Bali trip preparation.",
-                    hintStyle: TextStyle(
-      color: Colors.grey.shade400,
-    ),
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -238,7 +258,10 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                         Expanded(
                           child: Text(
                             formattedDate,
-                            style: TextStyle(fontSize: 16,color:Colors.grey.shade400),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade400,
+                            ),
                           ),
                         ),
 
@@ -283,7 +306,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                       }
                     },
                     child: Text(
-                      "Save",
+                      "Next",
                       style: const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
