@@ -68,6 +68,7 @@ class AppRouter {
             mode: args?["mode"] ?? ChecklistMode.create,
             checklistId: args?["checklistId"],
             showSkip: args?["showSkip"] ?? false,
+            checklist: args?["checklist"],
           ),
         );
 

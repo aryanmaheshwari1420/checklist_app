@@ -96,6 +96,7 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
                         "mode": ChecklistMode.edit,
                         "showSkip": false,
                         "checklistId": widget.checklistId,
+                        "checklist":checklist
                       },
                     );
                   },

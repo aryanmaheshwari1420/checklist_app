@@ -3,6 +3,7 @@ import 'package:checklist_app/features/checklist/domain/enums/checklist_status.d
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_repository_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,12 +11,14 @@ class CreateCheckListScreen extends ConsumerStatefulWidget {
   final String? checklistId;
   final ChecklistMode mode;
   final bool showSkip;
+  final ChecklistModel? checklist;
 
   const CreateCheckListScreen({
     super.key,
     this.mode = ChecklistMode.create,
     this.checklistId,
     this.showSkip = false,
+    this.checklist,
   });
 
   @override
@@ -58,11 +61,25 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
   void initState() {
     super.initState();
 
-    if (widget.mode == ChecklistMode.edit) {
-      Future.microtask(() async {
-        await loadChecklist();
+    if (widget.checklist != null) {
+      nameController.text = widget.checklist!.title;
+      descriptionController.text = widget.checklist!.description;
+      selectedDate = widget.checklist!.dueDate;
+
+      // Sync to riverpod controller for later saving — safe here
+      // since it's a simple notifier update, not a rebuild-triggering read.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref
+            .read(checklistControllerProvider.notifier)
+            .loadChecklist(widget.checklist!);
       });
     }
+
+    // if (widget.mode == ChecklistMode.edit) {
+    //   Future.microtask(() async {
+    //     await loadChecklist();
+    //   });
+    // }
   }
 
   @override
