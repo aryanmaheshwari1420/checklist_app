@@ -13,7 +13,9 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Checklist App',
 
-      theme: AppTheme.light,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
 
       home: const AuthGate(),
       onGenerateRoute: AppRouter.generateRoute,

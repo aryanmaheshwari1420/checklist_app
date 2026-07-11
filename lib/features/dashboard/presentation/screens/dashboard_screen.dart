@@ -20,6 +20,8 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
     final currentUserAsync = ref.watch(currentUserProvider);
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return dashboardAsync.when(
       loading: () =>
@@ -62,19 +64,18 @@ class DashboardScreen extends ConsumerWidget {
             : checkedItems / totalItems;
 
         return Scaffold(
-          backgroundColor: const Color(0xffF7F7F7),
-
+          // The background color and AppBar style are now handled by the theme
           appBar: DashboardAppBar(
             onMenuTap: () {},
             onNotificationTap: () {},
             hasNotification: false,
           ),
 
+          // The FAB is now styled by the theme's `floatingActionButtonTheme`
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
 
           floatingActionButton: FloatingActionButton(
-            backgroundColor: const Color(0xff5B3DF5),
             onPressed: () {
               Navigator.pushNamed(
                 context,
@@ -82,7 +83,7 @@ class DashboardScreen extends ConsumerWidget {
                 arguments: {"mode": ChecklistMode.create, "showSkip": false},
               );
             },
-            child: const Icon(Icons.add, color: Colors.white),
+            child: const Icon(Icons.add),
           ),
 
           bottomNavigationBar: DashboardBottomNavigation(
@@ -105,28 +106,31 @@ class DashboardScreen extends ConsumerWidget {
                 Row(
                   children: [
                     SummaryCard(
-                      title: "Total\nChecklists",
+                      title: "Total",
                       value: total,
                       icon: Icons.assignment_outlined,
-                      iconColor: Colors.deepPurple,
+                      iconColor: colorScheme.primary,
                     ),
+                    const SizedBox(width: 10),
                     SummaryCard(
                       title: "Completed",
                       value: completed,
                       icon: Icons.check_circle_outline,
-                      iconColor: Colors.green,
+                      iconColor: colorScheme.tertiary,
                     ),
+                    const SizedBox(width: 10),
                     SummaryCard(
                       title: "Pending",
                       value: pending,
                       icon: Icons.access_time,
                       iconColor: Colors.orange,
                     ),
-                    const SummaryCard(
+                    const SizedBox(width: 10),
+                    SummaryCard(
                       title: "Overdue",
                       value: 0,
                       icon: Icons.calendar_today_outlined,
-                      iconColor: Colors.red,
+                      iconColor: colorScheme.error,
                     ),
                   ],
                 ),
@@ -145,10 +149,7 @@ class DashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: 28),
 
-                const Text(
-                  "Recent Checklists",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+                Text("Recent Checklists", style: textTheme.titleLarge),
 
                 const SizedBox(height: 18),
 

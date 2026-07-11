@@ -67,22 +67,18 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
+    return Scaffold(
+      // The Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         centerTitle: true,
-        leading: const BackButton(color: Colors.black),
         title: Text(
           widget.mode == ChecklistMode.create
               ? "Create Checklist"
               : "Edit Checklist",
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
+          // Style is inherited from appBarTheme.titleTextStyle
         ),
         actions: widget.showSkip
             ? [
@@ -97,10 +93,8 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                       (routes) => false,
                     );
                   },
-                  child: const Text(
-                    "Skip",
-                    style: TextStyle(color: Colors.deepPurple),
-                  ),
+                  // Style is inherited from textButtonTheme
+                  child: const Text("Skip"),
                 ),
               ]
             : null,
@@ -121,12 +115,12 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: Colors.deepPurple.shade50,
+                      color: colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.assignment,
-                      color: Colors.deepPurple,
+                      color: colorScheme.primary,
                       size: 45,
                     ),
                   ),
@@ -139,10 +133,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                     widget.mode == ChecklistMode.create
                         ? "Let's create a new checklist"
                         : "Edit Checklist",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.headlineSmall,
                   ),
                 ),
 
@@ -153,22 +144,17 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                     widget.mode == ChecklistMode.create
                         ? "Fill in the basic details to get started."
                         : "Update your checklist information.",
-                    style: const TextStyle(color: Colors.grey, fontSize: 15),
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
                 Center(
-                  child: Text(
-                    widget.mode == ChecklistMode.create
-                        ? "Step 1 of 4"
-                        : "Step 1 of 4",
-                    style: const TextStyle(
-                      color: Color(0xff5B3DF5),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text("Step 1 of 4",
+                      style: textTheme.labelLarge
+                          ?.copyWith(color: colorScheme.primary)),
                 ),
 
                 const SizedBox(height: 10),
@@ -177,20 +163,17 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   value: 0.25,
                   minHeight: 6,
                   borderRadius: BorderRadius.circular(20),
-                  color: const Color(0xff5B3DF5),
-                  backgroundColor: Colors.grey.shade300,
+                  // Colors are now handled by the theme's progressIndicatorTheme
                 ),
 
                 const SizedBox(height: 30),
 
-                const Text(
-                  "Checklist Name *",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
+                Text("Checklist Name *", style: textTheme.labelLarge),
 
                 const SizedBox(height: 8),
 
                 TextFormField(
+                  // All styling is now handled by inputDecorationTheme
                   controller: nameController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -198,46 +181,29 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                     }
                     return null;
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "Bali Trip",
-                    hintStyle: TextStyle(color: Colors.grey.shade400),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
                   ),
                 ),
 
                 const SizedBox(height: 22),
 
-                const Text(
-                  "Description (Optional)",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
+                Text("Description (Optional)", style: textTheme.labelLarge),
 
                 const SizedBox(height: 8),
 
                 TextField(
+                  // All styling is now handled by inputDecorationTheme
                   controller: descriptionController,
                   maxLines: 4,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "Checklist for our Bali trip preparation.",
-                    hintStyle: TextStyle(color: Colors.grey.shade400),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
                   ),
                 ),
 
                 const SizedBox(height: 22),
 
-                const Text(
-                  "Due Date",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
+                Text("Due Date", style: textTheme.labelLarge),
 
                 const SizedBox(height: 8),
 
@@ -249,22 +215,19 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                       vertical: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: colorScheme.outline),
                     ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             formattedDate,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade400,
-                            ),
+                            style: textTheme.bodyLarge
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
-
                         const Icon(Icons.calendar_today_outlined),
                       ],
                     ),
@@ -277,12 +240,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff5B3DF5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
+                    // Style is inherited from elevatedButtonTheme
                     onPressed: () {
                       if (_formkey.currentState!.validate()) {
                         ref
@@ -305,10 +263,8 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                         );
                       }
                     },
-                    child: Text(
-                      "Next",
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
-                    ),
+                    // Style is inherited from elevatedButtonTheme
+                    child: const Text("Next"),
                   ),
                 ),
               ],

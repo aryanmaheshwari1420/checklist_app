@@ -118,14 +118,10 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
   Widget buildPriorityChip(String value) {
     final selected = selectedPriority == value;
 
+    // The Chip is now styled by the theme's `chipTheme`
     return ChoiceChip(
       label: Text(value),
       selected: selected,
-      selectedColor: const Color(0xff5B3DF5),
-      labelStyle: TextStyle(
-        color: selected ? Colors.white : Colors.black,
-        fontWeight: FontWeight.w600,
-      ),
       onSelected: (_) {
         setState(() {
           selectedPriority = value;
@@ -136,20 +132,18 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
+    return Scaffold(
+      // Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: const BackButton(color: Colors.black),
         centerTitle: true,
         title: const Text(
           "Create Checklist",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          // Style is inherited from appBarTheme.titleTextStyle
         ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -157,15 +151,10 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-
-              const Center(
-                child: Text(
-                  "Step 2 of 4",
-                  style: TextStyle(
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              Center(
+                child: Text("Step 2 of 4",
+                    style: textTheme.labelLarge
+                        ?.copyWith(color: colorScheme.primary)),
               ),
 
               const SizedBox(height: 10),
@@ -174,22 +163,18 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
                 value: 0.5,
                 minHeight: 6,
                 borderRadius: BorderRadius.circular(20),
-                color: const Color(0xff5B3DF5),
-                backgroundColor: Colors.grey.shade300,
+                // Colors are now handled by the theme's progressIndicatorTheme
               ),
-
               const SizedBox(height: 35),
-
-              const Text("Type", style: TextStyle(fontWeight: FontWeight.w600)),
-
+              Text("Type", style: textTheme.labelLarge),
               const SizedBox(height: 8),
 
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: colorScheme.outline),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -211,12 +196,7 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
               ),
 
               const SizedBox(height: 25),
-
-              const Text(
-                "Priority",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-
+              Text("Priority", style: textTheme.labelLarge),
               const SizedBox(height: 12),
 
               Wrap(
@@ -229,22 +209,15 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
               ),
 
               const SizedBox(height: 30),
-
               Row(
                 children: [
-                  const Expanded(
-                    child: Text(
-                      "Reminder",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
+                  Expanded(
+                    child: Text("Reminder", style: textTheme.titleMedium),
                   ),
 
+                  // The Switch is now styled by the theme's `switchTheme`
                   Switch(
                     value: reminder,
-                    activeThumbColor: const Color(0xff5B3DF5),
                     onChanged: (value) {
                       setState(() {
                         reminder = value;
@@ -253,25 +226,23 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
                   ),
                 ],
               ),
-
               if (reminder) ...[
                 const SizedBox(height: 20),
 
                 InkWell(
                   onTap: pickReminderDate,
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: colorScheme.outline),
                     ),
                     child: Row(
                       children: [
                         const Icon(Icons.calendar_today),
-
                         const SizedBox(width: 15),
-
                         Expanded(
                           child: Text(
                             reminderDate == null
@@ -283,24 +254,22 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 15),
 
                 InkWell(
                   onTap: pickReminderTime,
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: colorScheme.outline),
                     ),
                     child: Row(
                       children: [
                         const Icon(Icons.access_time),
-
                         const SizedBox(width: 15),
-
                         Expanded(
                           child: Text(
                             reminderTime == null
@@ -315,57 +284,33 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
               ],
 
               const SizedBox(height: 25),
-
-              const Text(
-                "Notes (Optional)",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-
+              Text("Notes (Optional)", style: textTheme.labelLarge),
               const SizedBox(height: 8),
 
+              // The TextField is now styled by the theme's `inputDecorationTheme`
               TextField(
                 controller: notesController,
                 maxLines: 5,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: "Add additional notes...",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
               ),
-
               const SizedBox(height: 45),
-
               Row(
                 children: [
                   Expanded(
+                    // This button is now styled by the theme's `outlinedButtonTheme`
                     child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 55),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
                       onPressed: () {
-                        Navigator.pushNamed(context, AppRoutes.createChecklist);
+                        Navigator.pop(context);
                       },
                       child: const Text("Back"),
                     ),
                   ),
-
                   const SizedBox(width: 15),
-
                   Expanded(
+                    // This button is now styled by the theme's `elevatedButtonTheme`
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(0, 55),
-                        backgroundColor: const Color(0xff5B3DF5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
                       onPressed: () {
                         ref
                             .read(checklistControllerProvider.notifier)
@@ -377,20 +322,19 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
                               notes: notesController.text.trim(),
                             );
 
-                        Navigator.pushNamed(context, AppRoutes.addCategories,arguments: {
-                                'mode': widget.mode,
-                                'checklistId': widget.checklistId,
-                              });
+                        Navigator.pushNamed(context, AppRoutes.addCategories,
+                            arguments: {
+                              'mode': widget.mode,
+                              'checklistId': widget.checklistId,
+                            });
                       },
                       child: const Text(
                         "Next",
-                        style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
             ],
           ),

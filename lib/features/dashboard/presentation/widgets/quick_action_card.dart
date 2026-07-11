@@ -14,40 +14,42 @@ class QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: 20,
-            horizontal: 12,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: const Color(0xff5B3DF5).withOpacity(.1),
-                child: Icon(
-                  icon,
-                  color: const Color(0xff5B3DF5),
-                ),
+      // Using a Card which will be styled by the theme's `cardTheme`
+      child: SizedBox(
+        height: 132,
+        child: Card(
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 12,
               ),
+              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
 
-              const SizedBox(height: 12),
-
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: colorScheme.primaryContainer,
+                    child: Icon(
+                      icon,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: textTheme.labelLarge,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

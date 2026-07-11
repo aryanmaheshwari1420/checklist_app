@@ -33,16 +33,17 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Edit Item"),
-        content: TextField(controller: controller),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: "Enter item name"),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xff5B3DF5),
-            ),
             onPressed: () {
               final value = controller.text.trim();
 
@@ -58,7 +59,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
 
               Navigator.pop(context);
             },
-            child: const Text("Update", style: TextStyle(color: Colors.white)),
+            child: const Text("Update"),
           ),
         ],
       ),
@@ -80,7 +81,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () {
               ref
                   .read(checklistControllerProvider.notifier)
@@ -88,7 +91,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
 
               Navigator.pop(context);
             },
-            child: const Text("Delete", style: TextStyle(color: Colors.white)),
+            child: const Text("Delete"),
           ),
         ],
       ),
@@ -102,9 +105,6 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
           title: Text("Add Item to $category"),
           content: TextField(
             controller: controller,
@@ -117,9 +117,6 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff5B3DF5),
-              ),
               onPressed: () {
                 final value = controller.text.trim();
 
@@ -131,7 +128,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
 
                 Navigator.pop(context);
               },
-              child: const Text("Add", style: TextStyle(color: Colors.white)),
+              child: const Text("Add"),
             ),
           ],
         );
@@ -141,64 +138,40 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final state = ref.watch(checklistControllerProvider);
-
     final categories = state.categories;
-
     final items = state.items;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
-
+      // Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
-        elevation: 0,
-
-        backgroundColor: Colors.white,
-
         centerTitle: true,
-
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-
         title: const Text(
           "Create Checklist",
-
-          style: TextStyle(color: Colors.black),
+          // Style is inherited from appBarTheme.titleTextStyle
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(20),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
-            const Text(
+            Text(
               "Add Items in Categories",
-
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: textTheme.headlineMedium,
             ),
-
             const SizedBox(height: 8),
-
-            const Text(
+            Text(
               "Add checklist items for each category.",
-
-              style: TextStyle(color: Colors.grey),
+              style: textTheme.bodyLarge
+                  ?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
-
             const SizedBox(height: 20),
-
             Expanded(
               child: ListView.builder(
                 itemCount: categories.length,
-
                 itemBuilder: (context, index) {
                   final category = categories[index];
 
@@ -206,51 +179,34 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                   // `items` map (state.items) declared in build().
                   final categoryItemList = items[category] ?? [];
 
-                  return Container(
+                  // Using a Card which will be styled by the theme's `cardTheme`
+                  return Card(
                     margin: const EdgeInsets.only(bottom: 15),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-
-                      borderRadius: BorderRadius.circular(14),
-
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-
                     child: ExpansionTile(
                       initiallyExpanded: index == 0,
-
                       title: Text(
                         "$category (${categoryItemList.length})",
-
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-
-                          color: Color(0xff5B3DF5),
-                        ),
+                        style: textTheme.titleMedium
+                            ?.copyWith(color: colorScheme.primary),
                       ),
-
                       children: [
                         if (categoryItemList.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 15),
-
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 15),
                             child: Text(
                               "No Items Added",
-
-                              style: TextStyle(color: Colors.grey),
+                              style: textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurfaceVariant),
                             ),
                           ),
-
                         ...categoryItemList.asMap().entries.map((entry) {
                           int itemIndex = entry.key;
-
                           final ChecklistItem item = entry.value;
 
                           return ListTile(
                             leading: Checkbox(
                               value: item.checked,
-                              activeColor: const Color(0xff5B3DF5),
+                              // The Checkbox is now styled by the theme
                               onChanged: (value) {
                                 final updatedItem = item.copyWith(
                                   checked: value,
@@ -265,9 +221,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                     );
                               },
                             ),
-
                             title: Text(item.title),
-
                             trailing: PopupMenuButton<String>(
                               onSelected: (value) {
                                 if (value == "edit") {
@@ -289,33 +243,22 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                             ),
                           );
                         }),
-
                         const Divider(height: 1),
-
                         InkWell(
                           onTap: () {
                             addItemDialog(category);
                           },
-
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 15),
-
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-
                               children: [
-                                Icon(Icons.add, color: Color(0xff5B3DF5)),
-
-                                SizedBox(width: 6),
-
+                                Icon(Icons.add, color: colorScheme.primary),
+                                const SizedBox(width: 6),
                                 Text(
                                   "Add Item",
-
-                                  style: TextStyle(
-                                    color: Color(0xff5B3DF5),
-
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: textTheme.labelLarge
+                                      ?.copyWith(color: colorScheme.primary),
                                 ),
                               ],
                             ),
@@ -327,7 +270,6 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                 },
               ),
             ),
-
             Row(
               children: [
                 Expanded(
@@ -335,18 +277,12 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-
                     child: const Text("Back"),
                   ),
                 ),
-
                 const SizedBox(width: 15),
-
                 Expanded(
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff5B3DF5),
-                    ),
                     onPressed: () async {
                       final controller = ref.read(
                         checklistControllerProvider.notifier,
@@ -379,7 +315,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       widget.mode == ChecklistMode.create
                           ? "Create"
                           : "Save Changes",
-                      style: const TextStyle(color: Colors.white),
+                      // Style is inherited from elevatedButtonTheme
                     ),
                   ),
                 ),

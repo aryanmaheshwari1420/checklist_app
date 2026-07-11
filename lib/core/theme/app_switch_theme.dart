@@ -1,5 +1,5 @@
+import 'package:checklist_app/core/theme/app_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:ledgerbook/core/theme/app_color_scheme.dart';
 
 class AppSwitchTheme {
   static SwitchThemeData light = SwitchThemeData(

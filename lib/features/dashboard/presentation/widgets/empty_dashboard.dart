@@ -1,4 +1,5 @@
-import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
+import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:flutter/material.dart';
 
 class EmptyDashboard extends StatelessWidget {
@@ -6,6 +7,9 @@ class EmptyDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -13,63 +17,44 @@ class EmptyDashboard extends StatelessWidget {
           Icon(
             Icons.assignment_turned_in_outlined,
             size: 150,
-            color: Colors.grey.shade400,
+            color: colorScheme.onSurface.withOpacity(0.25),
           ),
 
           const SizedBox(height: 30),
 
-          const Text(
+          Text(
             "No Checklists Yet!",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: textTheme.headlineSmall,
           ),
 
           const SizedBox(height: 12),
 
           Text(
-            "Create your first checklist to start\ntracking your tasks and progress.",
+            "Create your first checklist to start tracking your tasks and progress.",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              height: 1.5,
-            ),
+            style: textTheme.bodyLarge
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
 
           const SizedBox(height: 35),
 
           SizedBox(
-            width: double.infinity,
+            width: MediaQuery.sizeOf(context).width * 0.7,
             height: 55,
+            // This button is now styled by the theme's `elevatedButtonTheme`
             child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff5B3DF5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
               onPressed: () {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        const CreateCheckListScreen(),
-                  ),
+                  AppRoutes.createChecklist,
+                  arguments: {
+                    "mode": ChecklistMode.create,
+                    "showSkip": false
+                  },
                 );
               },
-              icon: const Icon(
-                Icons.add,
-                color: Colors.white,
-              ),
-              label: const Text(
-                "Create New Checklist",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              icon: const Icon(Icons.add),
+              label: const Text("Create New Checklist"),
             ),
           ),
         ],

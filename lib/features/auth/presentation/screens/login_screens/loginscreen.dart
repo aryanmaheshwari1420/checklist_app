@@ -1,43 +1,39 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      // The background color is now handled by the theme's `scaffoldBackgroundColor`
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-            ),
+          // Using a Card which will be styled by the theme's `cardTheme`
+          child: Card(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
 
                   Text(
                     "Welcome Back",
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.headlineMedium,
                   ),
 
                   const SizedBox(height: 8),
 
                   Text(
                     "Let's get things organised",
-                    style: GoogleFonts.poppins(
-                      color: Colors.grey,
-                      fontSize: 16,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
 
@@ -55,20 +51,14 @@ class LoginScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 56,
+                    // This button is now styled by the theme's `elevatedButtonTheme`
                     child: ElevatedButton.icon(
                       onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff5B3DF5),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      icon: const CircleAvatar(
+                      icon: CircleAvatar(
                         radius: 12,
                         backgroundColor: Colors.white,
                         child: Text(
+                          // Using theme colors for the icon background and text
                           "G",
                           style: TextStyle(
                             color: Colors.blue,
@@ -76,12 +66,8 @@ class LoginScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      label: Text(
+                      label: const Text(
                         "Continue with Google",
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
                       ),
                     ),
                   ),
@@ -91,15 +77,12 @@ class LoginScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 56,
+                    // This button is now styled by the theme's `outlinedButtonTheme`
                     child: OutlinedButton.icon(
                       onPressed: () {},
                       icon: const Icon(Icons.email_outlined),
-                      label: Text(
+                      label: const Text(
                         "Continue with Email",
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: Colors.grey.shade300),
@@ -117,18 +100,17 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       Text(
                         "Don't have an account?",
-                        style: GoogleFonts.poppins(color: Colors.grey),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                       ),
+                      // This button is now styled by the theme's `textButtonTheme`
                       TextButton(
                         onPressed: () {
                           Navigator.pushNamed(context, AppRoutes.signup);
                         },
-                        child: Text(
+                        child: const Text(
                           "Sign Up",
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xff5B3DF5),
-                            fontWeight: FontWeight.bold,
-                          ),
                         ),
                       ),
                     ],

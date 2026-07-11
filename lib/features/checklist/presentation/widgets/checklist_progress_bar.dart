@@ -11,6 +11,9 @@ class ChecklistProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         ClipRRect(
@@ -18,23 +21,16 @@ class ChecklistProgressBar extends StatelessWidget {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 8,
-            backgroundColor: Colors.grey.shade300,
-            valueColor: const AlwaysStoppedAnimation(
-              Color(0xff5B3DF5),
-            ),
+            // Colors are now handled by the theme's progressIndicatorTheme
           ),
         ),
-
         const SizedBox(height: 8),
-
         Align(
           alignment: Alignment.centerRight,
           child: Text(
             "${(progress * 100).toStringAsFixed(0)}%",
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w600,
-            ),
+            style: textTheme.labelMedium
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ),
       ],

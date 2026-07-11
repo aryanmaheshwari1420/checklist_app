@@ -19,76 +19,62 @@ class RecentChecklistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = total == 0 ? 0 : completed / total;
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
+    // Using a Card which will be styled by the theme's `cardTheme`
+    return Card(
+      margin: const EdgeInsets.only(bottom: 14),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: LinearProgressIndicator(
-                      value: progress.toDouble(),
-                      minHeight: 8,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation(
-                        Color(0xff5B3DF5),
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: LinearProgressIndicator(
+                        value: progress.toDouble(),
+                        minHeight: 8,
+                        // Colors are now handled by the theme's progressIndicatorTheme
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    "$completed of $total completed",
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
+                    const SizedBox(height: 10),
+                    Text(
+                      "$completed of $total completed",
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 18),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _StatusChip(status: status),
+                  const SizedBox(height: 28),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 18,
+                    color: colorScheme.primary,
                   ),
                 ],
               ),
-            ),
-
-            const SizedBox(width: 18),
-
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                _StatusChip(status: status),
-
-                const SizedBox(height: 28),
-
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                  color: Color(0xff5B3DF5),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -104,19 +90,19 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     Color color;
 
     switch (status) {
       case "Completed":
-        color = Colors.green;
+        color = colorScheme.tertiary;
         break;
-
       case "Pending":
-        color = Colors.orange;
+        color = Colors.orange; // Or AppColors.warning
         break;
-
-      default:
-        color = const Color(0xff5B3DF5);
+      default: // In Progress
+        color = colorScheme.primary;
     }
 
     return Container(
@@ -125,17 +111,17 @@ class _StatusChip extends StatelessWidget {
         vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
+        color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Text(
         status,
-        style: TextStyle(
+        style: textTheme.labelSmall?.copyWith(
           color: color,
           fontWeight: FontWeight.w600,
-          fontSize: 12,
         ),
       ),
     );
   }
 }
+          

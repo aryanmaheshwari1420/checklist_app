@@ -1,4 +1,5 @@
 import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:checklist_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -33,6 +34,9 @@ class ChecklistHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -42,47 +46,19 @@ class ChecklistHeader extends StatelessWidget {
             const Icon(
               Icons.calendar_today_outlined,
               size: 16,
-              color: Colors.grey,
+              color: AppColors.textSecondaryLight,
             ),
 
             const SizedBox(width: 6),
 
             Text(
               "Due: ${getDueDateText(checklist.dueDate)}",
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-              ),
+              style: textTheme.bodyMedium,
             ),
 
             const Spacer(),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.local_fire_department,
-                    color: Colors.red,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    checklist.priority,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildPriorityChip(context, checklist.priority),
           ],
         ),
 
@@ -94,13 +70,13 @@ class ChecklistHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xffF1EDFF),
+                color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Text(
                 checklist.type,
                 style: TextStyle(
-                  color: Color(0xff5B3DF5),
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -108,20 +84,61 @@ class ChecklistHeader extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            const Text("•", style: TextStyle(color: Colors.grey, fontSize: 18)),
+            Text("•",
+                style:
+                    TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 18)),
 
             const SizedBox(width: 12),
 
             Text(
               "${(calculateChecklistProgress(checklist) * 100).toInt()}% Completed",
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildPriorityChip(BuildContext context, String priority) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    IconData icon;
+    Color color;
+
+    switch (priority) {
+      case 'High':
+        icon = Icons.local_fire_department_outlined;
+        color = colorScheme.error;
+        break;
+      case 'Medium':
+        icon = Icons.flag_outlined;
+        color = AppColors.warning;
+        break;
+      case 'Low':
+      default:
+        icon = Icons.flag_outlined;
+        color = colorScheme.tertiary;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 4),
+          Text(
+            priority,
+            style: textTheme.labelMedium?.copyWith(color: color),
+          ),
+        ],
+      ),
     );
   }
 }

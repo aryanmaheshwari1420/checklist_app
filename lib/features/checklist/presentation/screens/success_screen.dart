@@ -17,6 +17,9 @@ class SuccessScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -31,8 +34,7 @@ class SuccessScreen extends ConsumerWidget {
         );
       },
       child: Scaffold(
-        backgroundColor: const Color(0xffF7F7F7),
-
+        // The background color is now handled by the theme
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -44,9 +46,9 @@ class SuccessScreen extends ConsumerWidget {
                   width: 110,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.green, width: 3),
+                    border: Border.all(color: colorScheme.primary, width: 3),
                   ),
-                  child: const Icon(Icons.check, size: 60, color: Colors.green),
+                  child: Icon(Icons.check, size: 60, color: colorScheme.primary),
                 ),
 
                 const SizedBox(height: 40),
@@ -55,24 +57,18 @@ class SuccessScreen extends ConsumerWidget {
                   mode == ChecklistMode.create
                       ? "Checklist Created!"
                       : "Checklist Updated!",
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: textTheme.headlineMedium,
                 ),
 
                 const SizedBox(height: 12),
 
                 Text(
                   mode == ChecklistMode.create
-                      ? "Your checklist has been\ncreated successfully."
-                      : "Your checklist has been\nupdated successfully.",
+                      ? "Your checklist has been created successfully."
+                      : "Your checklist has been updated successfully.",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    height: 1.5,
-                  ),
+                  style: textTheme.bodyLarge
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
 
                 const SizedBox(height: 50),
@@ -80,15 +76,10 @@ class SuccessScreen extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 55,
+                  // This button is now styled by the theme's `elevatedButtonTheme`
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff5B3DF5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
                     onPressed: () {
-                        ref.invalidate(checklistByIdProvider(checklistId));
+                      ref.invalidate(checklistByIdProvider(checklistId));
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
@@ -97,10 +88,7 @@ class SuccessScreen extends ConsumerWidget {
                         ),
                       );
                     },
-                    child: const Text(
-                      "View Checklist",
-                      style: TextStyle(color: Colors.white, fontSize: 17),
-                    ),
+                    child: const Text("View Checklist"),
                   ),
                 ),
 
@@ -109,12 +97,8 @@ class SuccessScreen extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 55,
+                  // This button is now styled by the theme's `outlinedButtonTheme`
                   child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
                     onPressed: () {
                       Navigator.pushNamedAndRemoveUntil(
                         context,
@@ -123,14 +107,7 @@ class SuccessScreen extends ConsumerWidget {
                         arguments: {"mode": ChecklistMode.create},
                       );
                     },
-                    child: const Text(
-                      "Add Another",
-                      style: TextStyle(
-                        color: Color(0xff5B3DF5),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: const Text("Add Another"),
                   ),
                 ),
               ],

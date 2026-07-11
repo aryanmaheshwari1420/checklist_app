@@ -15,19 +15,17 @@ class DashboardAppBar extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      surfaceTintColor: Colors.white,
+      // The AppBar is now fully styled by the theme's `appBarTheme`
       centerTitle: true,
       automaticallyImplyLeading: false,
 
       leading: IconButton(
         onPressed: onMenuTap,
-        icon: const Icon(
-          Icons.menu,
-          color: Colors.black,
-        ),
+        // Icon color is inherited from the theme
+        icon: const Icon(Icons.menu),
       ),
 
       title: Row(
@@ -37,26 +35,19 @@ class DashboardAppBar extends StatelessWidget
             height: 34,
             width: 34,
             decoration: BoxDecoration(
-              color: const Color(0xff5B3DF5),
+              color: colorScheme.primary,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.assignment_outlined,
-              color: Colors.white,
+              color: colorScheme.onPrimary,
               size: 18,
             ),
           ),
 
           const SizedBox(width: 10),
 
-          const Text(
-            "Action Checklist",
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-            ),
-          ),
+          const Text("Action Checklist"),
         ],
       ),
 
@@ -65,10 +56,8 @@ class DashboardAppBar extends StatelessWidget
           children: [
             IconButton(
               onPressed: onNotificationTap,
-              icon: const Icon(
-                Icons.notifications_none,
-                color: Colors.black,
-              ),
+              // Icon color is inherited from the theme
+              icon: const Icon(Icons.notifications_none),
             ),
 
             if (hasNotification)
@@ -78,8 +67,8 @@ class DashboardAppBar extends StatelessWidget
                 child: Container(
                   height: 10,
                   width: 10,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
+                  decoration: BoxDecoration(
+                    color: colorScheme.error,
                     shape: BoxShape.circle,
                   ),
                 ),

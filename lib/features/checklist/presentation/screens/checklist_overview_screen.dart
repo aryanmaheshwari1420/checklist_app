@@ -46,6 +46,8 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
   @override
   Widget build(BuildContext context) {
     final checklistAsync = ref.watch(checklistByIdProvider(widget.checklistId));
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return checklistAsync.when(
       loading: () =>
@@ -76,34 +78,14 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
             );
           },
           child: Scaffold(
-            backgroundColor: const Color(0xffF7F7F7),
-
+            // Scaffold and AppBar are now styled by the global theme
             appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.white,
-
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  ref.invalidate(dashboardProvider);
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.dashboard,
-                    (route) => false,
-                  );
-                },
-              ),
-
+              // The back button's pop behavior is handled by the PopScope below
               centerTitle: true,
-
               title: Text(
                 checklist.title,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                ),
+                // Style is inherited from appBarTheme.titleTextStyle
               ),
-
               actions: [
                 IconButton(
                   onPressed: () {
@@ -117,7 +99,7 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
                       },
                     );
                   },
-                  icon: const Icon(Icons.edit_outlined, color: Colors.black),
+                  icon: const Icon(Icons.edit_outlined),
                 ),
 
                 PopupMenuButton<String>(
@@ -128,16 +110,16 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
                         break;
                     }
                   },
-                  itemBuilder: (_) => const [
+                  itemBuilder: (_) => [
                     PopupMenuItem(
                       value: "delete",
                       child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, color: Colors.red),
-                          SizedBox(width: 10),
-                          Text(
+                        children: <Widget>[
+                          Icon(Icons.delete_outline, color: colorScheme.error),
+                          const SizedBox(width: 10),
+                           Text(
                             "Delete Checklist",
-                            style: TextStyle(color: Colors.red),
+                            style: TextStyle(color: colorScheme.error),
                           ),
                         ],
                       ),
@@ -147,9 +129,8 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
               ],
             ),
 
+            // The FAB is now styled by the theme's `floatingActionButtonTheme`
             floatingActionButton: FloatingActionButton.extended(
-              backgroundColor: const Color(0xff5B3DF5),
-
               onPressed: () {
                 Navigator.pushNamed(
                   context,
@@ -160,13 +141,8 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
                   },
                 );
               },
-
-              icon: const Icon(Icons.add, color: Colors.white),
-
-              label: const Text(
-                "Add Item",
-                style: TextStyle(color: Colors.white),
-              ),
+              icon: const Icon(Icons.add),
+              label: const Text("Add Item"),
             ),
 
             body: Padding(
@@ -188,29 +164,22 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
 
                   Text(
                     "Checklist for our ${checklist.title} preparation.",
-                    style: const TextStyle(fontSize: 15, color: Colors.black87),
+                    style: textTheme.bodyLarge,
                   ),
 
                   const SizedBox(height: 30),
 
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                     children: [
                       Text(
                         "Categories",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
+                        style: textTheme.titleLarge,
                       ),
-
                       Text(
                         "Edit Order",
-                        style: TextStyle(
-                          color: Color(0xff5B3DF5),
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: textTheme.labelLarge
+                            ?.copyWith(color: colorScheme.primary),
                       ),
                     ],
                   ),
@@ -263,29 +232,21 @@ class _ChecklistOverviewScreenState extends ConsumerState<ChecklistOverviewScree
       context: context,
       builder: (_) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+          // Shape is now handled by the theme's `dialogTheme`
           title: const Text("Delete Checklist"),
           content: const Text(
             "Are you sure you want to delete this checklist?\n\nThis action cannot be undone.",
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
+              onPressed: () => Navigator.pop(context, false),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              child: const Text(
-                "Delete",
-                style: TextStyle(color: Colors.white),
-              ),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Delete"),
             ),
           ],
         );

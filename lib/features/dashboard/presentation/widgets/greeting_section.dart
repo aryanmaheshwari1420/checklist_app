@@ -12,15 +12,15 @@ class GreetingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Hello, $name 👋",
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: textTheme.headlineSmall,
         ),
 
         const SizedBox(height: 4),
@@ -29,10 +29,8 @@ class GreetingSection extends StatelessWidget {
           hasChecklist
               ? "Here's your overview"
               : "Stay organized, stay ahead!",
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 15,
-          ),
+          style: textTheme.bodyLarge
+              ?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       ],
     );

@@ -1,4 +1,5 @@
-import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
+import 'package:checklist_app/app/app_routes.dart';
+import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/quick_action_card.dart';
 import 'package:flutter/material.dart';
 
@@ -7,15 +8,13 @@ class QuickActionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Quick Actions",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: textTheme.titleLarge,
         ),
 
         const SizedBox(height: 16),
@@ -26,11 +25,13 @@ class QuickActionsSection extends StatelessWidget {
               icon: Icons.add_task,
               title: "New\nChecklist",
               onTap: () {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const CreateCheckListScreen(),
-                  ),
+                  AppRoutes.createChecklist,
+                  arguments: {
+                    "mode": ChecklistMode.create,
+                    "showSkip": false
+                  },
                 );
               },
             ),

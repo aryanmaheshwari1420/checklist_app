@@ -64,13 +64,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final authState = ref.watch(authControllerProvider);
     final loading = authState.isLoading;
 
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: const BackButton(color: Colors.black),
-      ),
+      // The AppBar is now styled by the theme, providing a consistent back button and background
+      appBar: AppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Form(
@@ -81,16 +80,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             children: [
               const SizedBox(height: 20),
 
-              const Text(
+              Text(
                 "Sign Up",
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
+                style: textTheme.headlineLarge,
               ),
 
               const SizedBox(height: 10),
 
               Text(
                 "Create your account to get started",
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
 
               const SizedBox(height: 45),
@@ -205,14 +206,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff5B3DF5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-
-                  onPressed: loading
+                   onPressed: loading
                       ? null
                       : () async {
                           FocusScope.of(context).unfocus();
@@ -234,12 +228,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
                           ),
                         )
                       : const Text(
                           "Create Account",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
+                          // Text style is handled by elevatedButtonTheme
                         ),
                 ),
               ),
@@ -249,20 +242,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 children: [
                   Text(
                     "Already have an account?",
-                    style: TextStyle(color: Colors.grey.shade600),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
 
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text(
-                      "Log In",
-                      style: TextStyle(
-                        color: Color(0xff5B3DF5),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: const Text("Log In"),
                   ),
                 ],
               ),
@@ -278,7 +267,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        style: Theme.of(context).textTheme.labelLarge,
       ),
     );
   }
@@ -297,30 +286,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       obscureText: obscureText,
       validator: validator,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: const Color(0xff5B3DF5)),
+        // The prefixIcon color and all border/fill styles are now
+        // handled by the theme's `inputDecorationTheme`.
+        prefixIcon: Icon(icon),
         hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 18,
-          horizontal: 16,
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xff5B3DF5)),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
       ),
     );
   }
