@@ -149,9 +149,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
       // Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
-          "Create Checklist",
-          // Style is inherited from appBarTheme.titleTextStyle
+        title: Text(
+          widget.mode == ChecklistMode.create
+          ?"Create Checklist": "Edit Checklist",
         ),
       ),
       body: Padding(

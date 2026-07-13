@@ -192,6 +192,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                 TextFormField(
                   // All styling is now handled by inputDecorationTheme
                   controller: nameController,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return "Checklist name is required";

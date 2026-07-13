@@ -116,19 +116,46 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
   }
 
   Widget buildPriorityChip(String value) {
-    final selected = selectedPriority == value;
+  final selected = selectedPriority == value;
+  final color = _priorityColor(value);
 
-    // The Chip is now styled by the theme's `chipTheme`
-    return ChoiceChip(
-      label: Text(value),
-      selected: selected,
-      onSelected: (_) {
-        setState(() {
-          selectedPriority = value;
-        });
-      },
-    );
+  return ChoiceChip(
+    label: Text(value),
+    selected: selected,
+    onSelected: (_) {
+      setState(() {
+        selectedPriority = value;
+      });
+    },
+    // Selected state uses the priority color; unselected stays neutral (theme default)
+    selectedColor: color.withOpacity(0.15),
+    checkmarkColor: color,
+    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+    labelStyle: TextStyle(
+      color: selected ? color : Theme.of(context).colorScheme.onSurfaceVariant,
+      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+    ),
+    side: BorderSide(
+      color: selected ? color : Theme.of(context).colorScheme.outline,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  );
+}
+
+Color _priorityColor(String value) {
+  switch (value.toLowerCase()) {
+    case "low":
+      return Colors.green;
+    case "medium":
+      return Colors.orange;
+    case "high":
+      return Colors.red;
+    default:
+      return Theme.of(context).colorScheme.primary;
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +166,9 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
       // Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
-          "Create Checklist",
-          // Style is inherited from appBarTheme.titleTextStyle
+        title: Text(
+          widget.mode == ChecklistMode.create
+          ?"Create Checklist": "Edit Checklist",
         ),
       ),
       body: SafeArea(
