@@ -30,6 +30,7 @@ class AppRouter {
           builder: (_) => AddCategoryScreen(
             mode: args?["mode"] ?? ChecklistMode.create,
             checklistId: args?["checklistId"],
+            checklist: args?["checklist"],
           ),
         );
 

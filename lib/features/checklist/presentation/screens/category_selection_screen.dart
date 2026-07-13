@@ -1,6 +1,7 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
+import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +9,14 @@ class AddCategoryScreen extends ConsumerStatefulWidget {
 
   final ChecklistMode mode;
   final String? checklistId;
+  final ChecklistModel? checklist;
+
 
   const AddCategoryScreen({
     super.key,
     required this.mode,
     this.checklistId,
+    this.checklist
   });
 
   @override
@@ -20,6 +24,22 @@ class AddCategoryScreen extends ConsumerStatefulWidget {
 }
 
 class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.checklist != null) {
+      Future.microtask(() {
+        final currentState = ref.read(checklistControllerProvider);
+
+        if (currentState.categories.isEmpty) {
+          ref
+              .read(checklistControllerProvider.notifier)
+              .loadChecklist(widget.checklist!);
+        }
+      });
+    }
+  }
   List<String> get categories =>
       ref.read(checklistControllerProvider).categories;
 

@@ -75,21 +75,25 @@ class _ChecklistOverviewScreenState
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            onPressed: ()  {
-              final value = controller.text.trim();
-              if (value.isNotEmpty) {
-                 ref
-                    .read(checklistControllerProvider.notifier)
-                    .updateItem(
-                      category: category,
-                      oldItem: oldItem,
-                      newItem: oldItem.copyWith(title: value),
-                    );
-              }
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: const Text("Update"),
-          ),
+  onPressed: () async {
+    final value = controller.text.trim();
+    if (value.isNotEmpty) {
+      final notifier = ref.read(checklistControllerProvider.notifier);
+
+      await notifier.loadChecklist(checklist);
+      notifier.updateItem(
+        category: category,
+        oldItem: oldItem,
+        newItem: oldItem.copyWith(title: value),
+      );
+      await notifier.updateChecklist();
+
+      ref.invalidate(checklistByIdProvider(widget.checklistId));
+    }
+    if (context.mounted) Navigator.pop(context);
+  },
+  child: const Text("Update"),
+),
         ],
       ),
     );
@@ -110,17 +114,21 @@ class _ChecklistOverviewScreenState
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: ()  {
-               ref
-                  .read(checklistControllerProvider.notifier)
-                  .removeItem(category: category, item: item);
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: const Text("Delete"),
-          ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Theme.of(context).colorScheme.error,
+  ),
+  onPressed: () async {
+    final notifier = ref.read(checklistControllerProvider.notifier);
+
+    await notifier.loadChecklist(checklist);
+    notifier.removeItem(category: category, item: item);
+    await notifier.updateChecklist();
+
+    ref.invalidate(checklistByIdProvider(widget.checklistId));
+    if (context.mounted) Navigator.pop(context);
+  },
+  child: const Text("Delete"),
+),
         ],
       ),
     );
@@ -217,11 +225,12 @@ class _ChecklistOverviewScreenState
                   arguments: {
                     "mode": ChecklistMode.edit,
                     "checklistId": widget.checklistId,
+                    "checklist": checklist, 
                   },
                 );
               },
               icon: const Icon(Icons.add),
-              label: const Text("Add Item"),
+              label: const Text("Add Category/Item"),
             ),
 
             body: SafeArea(
@@ -381,19 +390,22 @@ class _ChecklistOverviewScreenState
 
                               return ListTile(
                                 leading: Checkbox(
-                                  value: item.checked,
-                                  onChanged: (value) {
-                                    ref
-                                        .read(checklistControllerProvider
-                                            .notifier)
-                                        .updateItem(
-                                          category: category,
-                                          oldItem: item,
-                                          newItem:
-                                              item.copyWith(checked: value),
-                                        );
-                                  },
-                                ),
+  value: item.checked,
+  onChanged: (value) async {
+    final notifier = ref.read(checklistControllerProvider.notifier);
+
+    // Load current persisted data into controller, apply change, save back.
+    await notifier.loadChecklist(checklist);
+    notifier.updateItem(
+      category: category,
+      oldItem: item,
+      newItem: item.copyWith(checked: value ?? false),
+    );
+    await notifier.updateChecklist();
+
+    ref.invalidate(checklistByIdProvider(widget.checklistId));
+  },
+),
                                 title: Text(item.title),
                                 trailing: PopupMenuButton<String>(
                                   onSelected: (value) {
