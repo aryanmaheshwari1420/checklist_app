@@ -314,7 +314,7 @@ class _ChecklistOverviewScreenState
                   _infoRow(
                     context,
                     label: "Priority",
-                    value: checklist.priority ?? "—",
+                    value: checklist.priority,
                     valueColor: _priorityColor(checklist.priority, colorScheme),
                     showDot: true,
                   ),
@@ -322,7 +322,7 @@ class _ChecklistOverviewScreenState
                   _infoRow(
                     context,
                     label: "Category",
-                    value: checklist.type ?? "—",
+                    value: checklist.type,
                     valueColor: colorScheme.primary,
                   ),
 
