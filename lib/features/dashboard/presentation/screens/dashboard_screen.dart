@@ -183,6 +183,7 @@ class DashboardScreen extends ConsumerWidget {
                       completed: completedItems,
                       total: totalItems,
                       status: status,
+                      dueDate: checklist.dueDate,
                       onTap: () {
                         Navigator.push(
                           context,
