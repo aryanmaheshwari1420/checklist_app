@@ -4,6 +4,7 @@ import 'package:checklist_app/features/checklist/presentation/providers/checklis
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:checklist_app/shared/utils/dialog_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -60,7 +61,7 @@ class _ChecklistOverviewScreenState
     final oldItem = items[index];
     final controller = TextEditingController(text: oldItem.title);
 
-    showDialog(
+    showBlurDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Edit Item"),
@@ -103,7 +104,7 @@ class _ChecklistOverviewScreenState
     final items = checklist.items[category] ?? [];
     final item = items[index];
 
-    showDialog(
+    showBlurDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Delete Item"),
@@ -536,7 +537,7 @@ class _ChecklistOverviewScreenState
   }
 
   Future<void> showDeleteDialog(WidgetRef ref, BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showBlurDialog<bool>(
       context: context,
       builder: (_) {
         return AlertDialog(

@@ -2,6 +2,7 @@ import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:checklist_app/shared/utils/dialog_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,7 +49,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   void addCategoryDialog() {
     final TextEditingController controller = TextEditingController();
 
-    showDialog(
+    showBlurDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -90,7 +91,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
       text: categories[index],
     );
 
-    showDialog(
+    showBlurDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -131,7 +132,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   // -------------------- DELETE CATEGORY --------------------
 
   void deleteCategory(int index) {
-    showDialog(
+    showBlurDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
