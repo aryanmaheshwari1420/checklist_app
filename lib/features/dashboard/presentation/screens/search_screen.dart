@@ -1,0 +1,240 @@
+import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
+import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class SearchScreen extends ConsumerStatefulWidget {
+  const SearchScreen({super.key});
+
+  @override
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends ConsumerState<SearchScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _query = _searchController.text.trim();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Returns a short "matched in ..." reason, or null if title itself matched.
+  String? _matchReason(ChecklistModel checklist, String query) {
+    final lowerQuery = query.toLowerCase();
+
+    if (checklist.title.toLowerCase().contains(lowerQuery)) {
+      return null; // title match — no extra reason needed
+    }
+
+    for (final category in checklist.categories) {
+      if (category.toLowerCase().contains(lowerQuery)) {
+        return "Category: $category";
+      }
+    }
+
+    for (final entry in checklist.items.entries) {
+      for (final item in entry.value) {
+        if (item.title.toLowerCase().contains(lowerQuery)) {
+          return "Item: ${item.title}";
+        }
+      }
+    }
+
+    return "no-match"; // sentinel — means nothing matched
+  }
+
+  List<_SearchResult> _filterChecklists(
+    List<ChecklistModel> checklists,
+    String query,
+  ) {
+    if (query.isEmpty) return [];
+
+    final results = <_SearchResult>[];
+
+    for (final checklist in checklists) {
+      final reason = _matchReason(checklist, query);
+      if (reason != "no-match") {
+        results.add(_SearchResult(checklist: checklist, matchReason: reason));
+      }
+    }
+
+    return results;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dashboardAsync = ref.watch(dashboardProvider);
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: "Search checklists, categories, items...",
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
+          style: textTheme.bodyLarge,
+        ),
+        actions: [
+          if (_searchController.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                _searchController.clear();
+              },
+            ),
+        ],
+      ),
+      body: dashboardAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text(error.toString())),
+        data: (checklists) {
+          if (_query.isEmpty) {
+            return _buildPrompt(
+              context,
+              icon: Icons.search,
+              message: "Search by checklist name, category, or item name.",
+            );
+          }
+
+          final results = _filterChecklists(checklists, _query);
+
+          if (results.isEmpty) {
+            return _buildPrompt(
+              context,
+              icon: Icons.search_off,
+              message: "No results found for \"$_query\".",
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: results.length,
+            itemBuilder: (context, index) {
+              final result = results[index];
+              final checklist = result.checklist;
+
+              int total = 0;
+              int completed = 0;
+              for (final items in checklist.items.values) {
+                total += items.length;
+                completed += items.where((e) => e.checked).length;
+              }
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.checklist_rtl_outlined,
+                      color: colorScheme.primary,
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    checklist.title,
+                    style: textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(
+                        "$completed of $total completed",
+                        style: textTheme.bodySmall
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                      if (result.matchReason != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          "Matched \u2022 ${result.matchReason}",
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: colorScheme.primary,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChecklistOverviewScreen(
+                          checklistId: checklist.id,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPrompt(
+    BuildContext context, {
+    required IconData icon,
+    required String message,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 64, color: colorScheme.onSurface.withOpacity(0.3)),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyLarge
+                  ?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchResult {
+  final ChecklistModel checklist;
+  final String? matchReason;
+
+  _SearchResult({required this.checklist, this.matchReason});
+}

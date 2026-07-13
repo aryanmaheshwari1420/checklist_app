@@ -4,6 +4,8 @@ class AppRoutes {
   static const signup = "/signup";
 
   static const dashboard = "/dashboard";
+  static const search = '/search';
+
 
   static const createChecklist = "/create-checklist";
   static const checklistDetails = "/checklist-details";

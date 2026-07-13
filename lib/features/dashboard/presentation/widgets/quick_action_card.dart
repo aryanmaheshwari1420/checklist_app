@@ -25,21 +25,15 @@ class QuickActionCard extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 12,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
 
                 children: [
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: colorScheme.primaryContainer,
-                    child: Icon(
-                      icon,
-                      color: colorScheme.primary,
-                    ),
+                    child: Icon(icon, color: colorScheme.primary),
                   ),
                   const SizedBox(height: 18),
                   Text(

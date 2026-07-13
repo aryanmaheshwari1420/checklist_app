@@ -9,6 +9,7 @@ import 'package:checklist_app/features/checklist/presentation/screens/checklist_
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:checklist_app/features/dashboard/presentation/screens/search_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -22,6 +23,9 @@ class AppRouter {
 
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
+
+      case AppRoutes.search:
+        return MaterialPageRoute(builder: (_) => const SearchScreen());
 
       case AppRoutes.addCategories:
         final args = settings.arguments as Map<String, dynamic>?;

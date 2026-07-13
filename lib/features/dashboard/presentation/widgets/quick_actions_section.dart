@@ -12,10 +12,7 @@ class QuickActionsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Quick Actions",
-          style: textTheme.titleLarge,
-        ),
+        Text("Quick Actions", style: textTheme.titleLarge),
 
         const SizedBox(height: 16),
 
@@ -28,10 +25,7 @@ class QuickActionsSection extends StatelessWidget {
                 Navigator.pushNamed(
                   context,
                   AppRoutes.createChecklist,
-                  arguments: {
-                    "mode": ChecklistMode.create,
-                    "showSkip": false
-                  },
+                  arguments: {"mode": ChecklistMode.create, "showSkip": false},
                 );
               },
             ),
@@ -53,7 +47,9 @@ class QuickActionsSection extends StatelessWidget {
             QuickActionCard(
               icon: Icons.search,
               title: "Search",
-              onTap: () {},
+              onTap: () {
+                // Navigator.pushNamed(context, AppRoutes.search);
+              },
             ),
 
             const SizedBox(width: 14),
