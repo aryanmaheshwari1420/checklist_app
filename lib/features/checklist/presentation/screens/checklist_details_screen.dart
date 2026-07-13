@@ -5,15 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MoreDetailScreen extends ConsumerStatefulWidget {
-
   final ChecklistMode mode;
   final String? checklistId;
 
-  const MoreDetailScreen({
-    super.key,
-    required this.mode,
-    this.checklistId,
-  });
+  const MoreDetailScreen({super.key, required this.mode, this.checklistId});
 
   @override
   ConsumerState<MoreDetailScreen> createState() => _MoreDetailScreenState();
@@ -32,13 +27,9 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
   ];
 
   String selectedType = "Travel";
-
   String selectedPriority = "Medium";
-
   bool reminder = false;
-
   DateTime? reminderDate;
-
   TimeOfDay? reminderTime;
 
   @override
@@ -116,46 +107,45 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
   }
 
   Widget buildPriorityChip(String value) {
-  final selected = selectedPriority == value;
-  final color = _priorityColor(value);
+    final selected = selectedPriority == value;
+    final color = _priorityColor(value);
 
-  return ChoiceChip(
-    label: Text(value),
-    selected: selected,
-    onSelected: (_) {
-      setState(() {
-        selectedPriority = value;
-      });
-    },
-    // Selected state uses the priority color; unselected stays neutral (theme default)
-    selectedColor: color.withOpacity(0.15),
-    checkmarkColor: color,
-    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-    labelStyle: TextStyle(
-      color: selected ? color : Theme.of(context).colorScheme.onSurfaceVariant,
-      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-    ),
-    side: BorderSide(
-      color: selected ? color : Theme.of(context).colorScheme.outline,
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-    ),
-  );
-}
-
-Color _priorityColor(String value) {
-  switch (value.toLowerCase()) {
-    case "low":
-      return Colors.green;
-    case "medium":
-      return Colors.orange;
-    case "high":
-      return Colors.red;
-    default:
-      return Theme.of(context).colorScheme.primary;
+    return ChoiceChip(
+      label: Text(value),
+      selected: selected,
+      onSelected: (_) {
+        setState(() {
+          selectedPriority = value;
+        });
+      },
+      selectedColor: color.withOpacity(0.15),
+      checkmarkColor: color,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      labelStyle: TextStyle(
+        color: selected
+            ? color
+            : Theme.of(context).colorScheme.onSurfaceVariant,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+      ),
+      side: BorderSide(
+        color: selected ? color : Theme.of(context).colorScheme.outline,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    );
   }
-}
+
+  Color _priorityColor(String value) {
+    switch (value.toLowerCase()) {
+      case "low":
+        return Colors.green;
+      case "medium":
+        return Colors.orange;
+      case "high":
+        return Colors.red;
+      default:
+        return Theme.of(context).colorScheme.primary;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,12 +153,12 @@ Color _priorityColor(String value) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
         centerTitle: true,
         title: Text(
           widget.mode == ChecklistMode.create
-          ?"Create Checklist": "Edit Checklist",
+              ? "Create Checklist"
+              : "Edit Checklist",
         ),
       ),
       body: SafeArea(
@@ -179,9 +169,12 @@ Color _priorityColor(String value) {
             children: [
               const SizedBox(height: 10),
               Center(
-                child: Text("Step 2 of 4",
-                    style: textTheme.labelLarge
-                        ?.copyWith(color: colorScheme.primary)),
+                child: Text(
+                  "Step 2 of 4",
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.primary,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 10),
@@ -190,23 +183,30 @@ Color _priorityColor(String value) {
                 value: 0.5,
                 minHeight: 6,
                 borderRadius: BorderRadius.circular(20),
-                // Colors are now handled by the theme's progressIndicatorTheme
               ),
               const SizedBox(height: 35),
               Text("Type", style: textTheme.labelLarge),
               const SizedBox(height: 8),
 
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: colorScheme.outline),
+              // ✅ Fixed — now uses inputDecorationTheme, matches TextField style
+              InputDecorator(
+                decoration: const InputDecoration(
+                  isDense: true, // ✅ reduces the default height
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 0,
+                  ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: selectedType,
                     isExpanded: true,
+                    borderRadius: BorderRadius.circular(14),
+                    elevation: 3, // ✅ softer shadow than default (8)
+                    dropdownColor: colorScheme.surfaceContainerHigh, //
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                     items: categories.map((category) {
                       return DropdownMenuItem(
                         value: category,
@@ -241,8 +241,6 @@ Color _priorityColor(String value) {
                   Expanded(
                     child: Text("Reminder", style: textTheme.titleMedium),
                   ),
-
-                  // The Switch is now styled by the theme's `switchTheme`
                   Switch(
                     value: reminder,
                     onChanged: (value) {
@@ -256,25 +254,29 @@ Color _priorityColor(String value) {
               if (reminder) ...[
                 const SizedBox(height: 20),
 
+                // ✅ Fixed
                 InkWell(
                   onTap: pickReminderDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: colorScheme.outline),
-                    ),
+                  borderRadius: BorderRadius.circular(14),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(),
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today),
+                        Icon(
+                          Icons.calendar_today,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                         const SizedBox(width: 15),
                         Expanded(
                           child: Text(
                             reminderDate == null
                                 ? "Select Reminder Date"
                                 : "${reminderDate!.day}/${reminderDate!.month}/${reminderDate!.year}",
+                            style: textTheme.bodyLarge?.copyWith(
+                              color: reminderDate == null
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
@@ -283,25 +285,29 @@ Color _priorityColor(String value) {
                 ),
                 const SizedBox(height: 15),
 
+                // ✅ Fixed
                 InkWell(
                   onTap: pickReminderTime,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: colorScheme.outline),
-                    ),
+                  borderRadius: BorderRadius.circular(14),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time),
+                        Icon(
+                          Icons.access_time,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                         const SizedBox(width: 15),
                         Expanded(
                           child: Text(
                             reminderTime == null
                                 ? "Select Reminder Time"
                                 : reminderTime!.format(context),
+                            style: textTheme.bodyLarge?.copyWith(
+                              color: reminderTime == null
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
@@ -314,7 +320,6 @@ Color _priorityColor(String value) {
               Text("Notes (Optional)", style: textTheme.labelLarge),
               const SizedBox(height: 8),
 
-              // The TextField is now styled by the theme's `inputDecorationTheme`
               TextField(
                 controller: notesController,
                 maxLines: 5,
@@ -326,7 +331,6 @@ Color _priorityColor(String value) {
               Row(
                 children: [
                   Expanded(
-                    // This button is now styled by the theme's `outlinedButtonTheme`
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -336,7 +340,6 @@ Color _priorityColor(String value) {
                   ),
                   const SizedBox(width: 15),
                   Expanded(
-                    // This button is now styled by the theme's `elevatedButtonTheme`
                     child: ElevatedButton(
                       onPressed: () {
                         ref
@@ -349,15 +352,16 @@ Color _priorityColor(String value) {
                               notes: notesController.text.trim(),
                             );
 
-                        Navigator.pushNamed(context, AppRoutes.addCategories,
-                            arguments: {
-                              'mode': widget.mode,
-                              'checklistId': widget.checklistId,
-                            });
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.addCategories,
+                          arguments: {
+                            'mode': widget.mode,
+                            'checklistId': widget.checklistId,
+                          },
+                        );
                       },
-                      child: const Text(
-                        "Next",
-                      ),
+                      child: const Text("Next"),
                     ),
                   ),
                 ],

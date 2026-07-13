@@ -125,7 +125,6 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
 
                 Center(
                   child: Container(
@@ -162,16 +161,21 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                         ? "Fill in the basic details to get started."
                         : "Update your checklist information.",
                     textAlign: TextAlign.center,
-                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
                 Center(
-                  child: Text("Step 1 of 4",
-                      style: textTheme.labelLarge
-                          ?.copyWith(color: colorScheme.primary)),
+                  child: Text(
+                    "Step 1 of 4",
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 10),
@@ -185,7 +189,20 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
                 const SizedBox(height: 30),
 
-                Text("Checklist Name *", style: textTheme.labelLarge),
+                Text.rich(
+                  TextSpan(
+                    text: "Checklist Name ",
+                    style: textTheme.labelLarge,
+                    children: [
+                      TextSpan(
+                        text: "*",
+                        style: textTheme.labelLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 8),
 
@@ -199,9 +216,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                     }
                     return null;
                   },
-                  decoration: const InputDecoration(
-                    hintText: "Bali Trip",
-                  ),
+                  decoration: const InputDecoration(hintText: "Bali Trip"),
                 ),
 
                 const SizedBox(height: 22),
@@ -227,26 +242,28 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
                 InkWell(
                   onTap: pickDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: colorScheme.outline),
+                  borderRadius: BorderRadius.circular(14),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      // This automatically pulls colors, border, fill from
+                      // inputDecorationTheme — same as TextFormField
                     ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             formattedDate,
-                            style: textTheme.bodyLarge
-                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: selectedDate == null
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
+                            ),
                           ),
                         ),
-                        const Icon(Icons.calendar_today_outlined),
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ],
                     ),
                   ),
