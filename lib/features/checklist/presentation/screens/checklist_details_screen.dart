@@ -167,7 +167,6 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
               Center(
                 child: Text(
                   "Step 2 of 4",
@@ -188,10 +187,9 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
               Text("Type", style: textTheme.labelLarge),
               const SizedBox(height: 8),
 
-              // ✅ Fixed — now uses inputDecorationTheme, matches TextField style
               InputDecorator(
                 decoration: const InputDecoration(
-                  isDense: true, // ✅ reduces the default height
+                  isDense: true, 
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 0,
@@ -202,7 +200,7 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
                     value: selectedType,
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(14),
-                    elevation: 3, // ✅ softer shadow than default (8)
+                    elevation: 3, 
                     dropdownColor: colorScheme.surfaceContainerHigh, //
                     style: textTheme.bodyLarge?.copyWith(
                       color: colorScheme.onSurface,

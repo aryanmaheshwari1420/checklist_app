@@ -8,7 +8,8 @@ class RecentChecklistCard extends StatelessWidget {
     required this.total,
     required this.status,
     required this.onTap,
-    this.dueDate, // ✅ new optional parameter
+    this.dueDate,
+    this.icon = Icons.checklist_rtl_outlined,
   });
 
   final String title;
@@ -17,6 +18,10 @@ class RecentChecklistCard extends StatelessWidget {
   final String status;
   final VoidCallback onTap;
   final DateTime? dueDate;
+  final IconData icon;
+
+  bool get _hasItems => total > 0;
+
 
   String? get _formattedDueDate {
     if (dueDate == null) return null;
@@ -38,91 +43,156 @@ class RecentChecklistCard extends StatelessWidget {
     final todayOnly = DateTime(today.year, today.month, today.day);
 
     return dueDateOnly.isBefore(todayOnly);
+
+  }
+
+  Color _statusColor(ColorScheme colorScheme) {
+    if (!_hasItems) return colorScheme.onSurfaceVariant;
+
+    switch (status) {
+      case "Completed":
+        return colorScheme.tertiary;
+      case "Pending":
+        return Colors.orange;
+      case "Overdue":
+        return colorScheme.error;
+      default: // In Progress
+        return colorScheme.primary;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final progress = total == 0 ? 0 : completed / total;
+    final progress = total == 0 ? 0.0 : completed / total;
+    final percentage = (progress * 100).round();
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final statusColor = _statusColor(colorScheme);
+    final trackColor = colorScheme.primary.withValues(alpha: 0.15);
+
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              // ---- Top row: icon, title, due date, status chip ----
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 42,
+                    width: 42,
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: statusColor, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         if (_formattedDueDate != null) ...[
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.calendar_today_outlined,
-                            size: 13,
-                            color: _isOverdue
-                                ? colorScheme.error
-                                : colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _formattedDueDate!,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: _isOverdue
-                                  ? colorScheme.error
-                                  : colorScheme.onSurfaceVariant,
-                              fontWeight: _isOverdue
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
+                          const SizedBox(height: 3),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.calendar_today_outlined,
+                                size: 12,
+                                color: _isOverdue
+                                    ? colorScheme.error
+                                    : colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Due: $_formattedDueDate",
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: _isOverdue
+                                      ? colorScheme.error
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: _isOverdue
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: LinearProgressIndicator(
-                        value: progress.toDouble(),
-                        minHeight: 8,
+                  ),
+                  const SizedBox(width: 8),
+                  if (_hasItems) _StatusChip(status: status, color: statusColor),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // ---- Progress bar + percentage, or empty state ----
+              if (_hasItems) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 7,
+                          backgroundColor:
+                              trackColor,
+                          valueColor: AlwaysStoppedAnimation(statusColor),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(width: 10),
                     Text(
-                      "$completed of $total completed",
-                      style: textTheme.bodyMedium
-                          ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      "$percentage%",
+                      style: textTheme.labelLarge?.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 18),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _StatusChip(status: status),
-                  const SizedBox(height: 28),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 18,
-                    color: colorScheme.primary,
-                  ),
-                ],
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  "$completed of $total completed",
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+              ] else
+                Row(
+                  children: [
+                    Icon(
+                      Icons.inbox_outlined,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "No items added yet",
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -134,32 +204,18 @@ class RecentChecklistCard extends StatelessWidget {
 class _StatusChip extends StatelessWidget {
   const _StatusChip({
     required this.status,
+    required this.color,
   });
 
   final String status;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-    Color color;
-
-    switch (status) {
-      case "Completed":
-        color = colorScheme.tertiary;
-        break;
-      case "Pending":
-        color = Colors.orange;
-        break;
-      default:
-        color = colorScheme.primary;
-    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(30),
