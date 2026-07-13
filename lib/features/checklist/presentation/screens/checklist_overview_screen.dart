@@ -75,25 +75,25 @@ class _ChecklistOverviewScreenState
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-  onPressed: () async {
-    final value = controller.text.trim();
-    if (value.isNotEmpty) {
-      final notifier = ref.read(checklistControllerProvider.notifier);
+            onPressed: () async {
+              final value = controller.text.trim();
+              if (value.isNotEmpty) {
+                final notifier = ref.read(checklistControllerProvider.notifier);
 
-      await notifier.loadChecklist(checklist);
-      notifier.updateItem(
-        category: category,
-        oldItem: oldItem,
-        newItem: oldItem.copyWith(title: value),
-      );
-      await notifier.updateChecklist();
+                await notifier.loadChecklist(checklist);
+                notifier.updateItem(
+                  category: category,
+                  oldItem: oldItem,
+                  newItem: oldItem.copyWith(title: value),
+                );
+                await notifier.updateChecklist();
 
-      ref.invalidate(checklistByIdProvider(widget.checklistId));
-    }
-    if (context.mounted) Navigator.pop(context);
-  },
-  child: const Text("Update"),
-),
+                ref.invalidate(checklistByIdProvider(widget.checklistId));
+              }
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text("Update"),
+          ),
         ],
       ),
     );
@@ -114,21 +114,21 @@ class _ChecklistOverviewScreenState
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Theme.of(context).colorScheme.error,
-  ),
-  onPressed: () async {
-    final notifier = ref.read(checklistControllerProvider.notifier);
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () async {
+              final notifier = ref.read(checklistControllerProvider.notifier);
 
-    await notifier.loadChecklist(checklist);
-    notifier.removeItem(category: category, item: item);
-    await notifier.updateChecklist();
+              await notifier.loadChecklist(checklist);
+              notifier.removeItem(category: category, item: item);
+              await notifier.updateChecklist();
 
-    ref.invalidate(checklistByIdProvider(widget.checklistId));
-    if (context.mounted) Navigator.pop(context);
-  },
-  child: const Text("Delete"),
-),
+              ref.invalidate(checklistByIdProvider(widget.checklistId));
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text("Delete"),
+          ),
         ],
       ),
     );
@@ -136,22 +136,28 @@ class _ChecklistOverviewScreenState
 
   @override
   Widget build(BuildContext context) {
-    final checklistAsync =
-        ref.watch(checklistByIdProvider(widget.checklistId));
+    final checklistAsync = ref.watch(checklistByIdProvider(widget.checklistId));
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
     return checklistAsync.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, _) =>
-          Scaffold(body: Center(child: Text(error.toString()))),
+      error: (error, _) => Scaffold(
+        body: Center(
+          child: Text(
+            error.toString().contains('not found')
+                ? "Checklist not found."
+                : error.toString(),
+          ),
+        ),
+      ),
       data: (checklist) {
-        if (checklist == null) {
-          return const Scaffold(
-            body: Center(child: Text("Checklist not found.")),
-          );
-        }
+        // if (checklist == null) {
+        //   return const Scaffold(
+        //     body: Center(child: Text("Checklist not found.")),
+        //   );
+        // }
 
         final total = _totalItems(checklist);
         final completed = _completedItems(checklist);
@@ -225,7 +231,7 @@ class _ChecklistOverviewScreenState
                   arguments: {
                     "mode": ChecklistMode.edit,
                     "checklistId": widget.checklistId,
-                    "checklist": checklist, 
+                    "checklist": checklist,
                   },
                 );
               },
@@ -260,8 +266,9 @@ class _ChecklistOverviewScreenState
                       Expanded(
                         child: Text(
                           checklist.title,
-                          style: textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                          style: textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       Text(
@@ -288,8 +295,9 @@ class _ChecklistOverviewScreenState
 
                   Text(
                     "$completed of $total completed",
-                    style: textTheme.bodyMedium
-                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -326,8 +334,9 @@ class _ChecklistOverviewScreenState
                     checklist.description.isNotEmpty
                         ? checklist.description
                         : "No description added.",
-                    style: textTheme.bodyMedium
-                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -340,7 +349,10 @@ class _ChecklistOverviewScreenState
                     ),
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: colorScheme.primary, width: 2),
+                        bottom: BorderSide(
+                          color: colorScheme.primary,
+                          width: 2,
+                        ),
                       ),
                     ),
                     child: Text(
@@ -362,8 +374,9 @@ class _ChecklistOverviewScreenState
                     itemBuilder: (context, index) {
                       final category = checklist.categories[index];
                       final categoryItems = checklist.items[category] ?? [];
-                      final categoryCompleted =
-                          categoryItems.where((e) => e.checked).length;
+                      final categoryCompleted = categoryItems
+                          .where((e) => e.checked)
+                          .length;
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 15),
@@ -371,8 +384,9 @@ class _ChecklistOverviewScreenState
                           initiallyExpanded: index == 0,
                           title: Text(
                             "$category ($categoryCompleted/${categoryItems.length})",
-                            style: textTheme.titleMedium
-                                ?.copyWith(color: colorScheme.primary),
+                            style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.primary,
+                            ),
                           ),
                           children: [
                             if (categoryItems.isEmpty)
@@ -381,7 +395,8 @@ class _ChecklistOverviewScreenState
                                 child: Text(
                                   "No Items Added",
                                   style: textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant),
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                             ...categoryItems.asMap().entries.map((entry) {
@@ -390,31 +405,38 @@ class _ChecklistOverviewScreenState
 
                               return ListTile(
                                 leading: Checkbox(
-  value: item.checked,
-  onChanged: (value) async {
-    final notifier = ref.read(checklistControllerProvider.notifier);
+                                  value: item.checked,
+                                  onChanged: (value) {
+                                    final notifier = ref.read(
+                                      checklistControllerProvider.notifier,
+                                    );
 
-    // Load current persisted data into controller, apply change, save back.
-    await notifier.loadChecklist(checklist);
-    notifier.updateItem(
-      category: category,
-      oldItem: item,
-      newItem: item.copyWith(checked: value ?? false),
-    );
-    await notifier.updateChecklist();
-
-    ref.invalidate(checklistByIdProvider(widget.checklistId));
-  },
-),
+                                    notifier.loadChecklist(checklist);
+                                    notifier.updateItem(
+                                      category: category,
+                                      oldItem: item,
+                                      newItem: item.copyWith(
+                                        checked: value ?? false,
+                                      ),
+                                    );
+                                    notifier.updateChecklist();
+                                  },
+                                ),
                                 title: Text(item.title),
                                 trailing: PopupMenuButton<String>(
                                   onSelected: (value) {
                                     if (value == "edit") {
                                       editItemDialog(
-                                          checklist, category, itemIndex);
+                                        checklist,
+                                        category,
+                                        itemIndex,
+                                      );
                                     } else {
                                       deleteItemDialog(
-                                          checklist, category, itemIndex);
+                                        checklist,
+                                        category,
+                                        itemIndex,
+                                      );
                                     }
                                   },
                                   itemBuilder: (context) => const [
@@ -462,8 +484,9 @@ class _ChecklistOverviewScreenState
           width: 90,
           child: Text(
             label,
-            style: textTheme.bodyMedium
-                ?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         if (showDot) ...[
@@ -496,8 +519,18 @@ class _ChecklistOverviewScreenState
 
   String _monthName(int month) {
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     return months[month - 1];
   }
@@ -518,7 +551,8 @@ class _ChecklistOverviewScreenState
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
               onPressed: () => Navigator.pop(context, true),
               child: const Text("Delete"),
             ),

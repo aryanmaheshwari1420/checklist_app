@@ -69,5 +69,22 @@ class ChecklistRepository {
 
     return ChecklistModel.fromMap(doc.data()!);
   }
+
+  Stream<ChecklistModel> watchChecklistById(String checklistId) {
+  final uid = _auth.currentUser!.uid;
+
+  return _firestore
+      .collection('users')
+      .doc(uid)
+      .collection('checklists')
+      .doc(checklistId)
+      .snapshots()
+      .map((doc) {
+    if (!doc.exists) {
+      throw Exception('Checklist not found');
+    }
+    return ChecklistModel.fromMap(doc.data()!);
+  });
+}
   
 }
