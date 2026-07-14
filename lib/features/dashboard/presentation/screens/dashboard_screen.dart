@@ -88,7 +88,17 @@ class DashboardScreen extends ConsumerWidget {
 
           bottomNavigationBar: DashboardBottomNavigation(
             currentIndex: 0,
-            onTap: (index) {},
+            onTap: (index) {
+              switch (index) {
+                case 1: // Templates
+                  Navigator.pushNamed(context, AppRoutes.templatesList);
+                  break;
+                case 2: // Search
+                  Navigator.pushNamed(context, AppRoutes.search);
+                  break;
+                // index 3 = "More" — wire when that screen is ready
+              }
+            },
             onFabPressed: () {},
           ),
 

@@ -23,6 +23,11 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
     "Work",
     "Shopping",
     "Finance",
+    "Split",
+    "Charity",
+    "Event",
+    "Vehicle",
+    "Vendor",
     "Health",
   ];
 

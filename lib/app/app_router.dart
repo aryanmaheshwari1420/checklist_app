@@ -10,6 +10,9 @@ import 'package:checklist_app/features/checklist/presentation/screens/create_che
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/search_screen.dart';
+import 'package:checklist_app/features/templates/presentation/screens/template_overview_screen.dart';
+import 'package:checklist_app/features/templates/presentation/screens/template_search_screen.dart';
+import 'package:checklist_app/features/templates/presentation/screens/templates_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -27,6 +30,12 @@ class AppRouter {
       case AppRoutes.search:
         return MaterialPageRoute(builder: (_) => const SearchScreen());
 
+      case AppRoutes.templatesList:
+        return MaterialPageRoute(builder: (_) => const TemplatesListScreen());
+
+      case AppRoutes.searchTemplates:
+        return MaterialPageRoute(builder: (_) => const TemplateSearchScreen());  
+
       case AppRoutes.addCategories:
         final args = settings.arguments as Map<String, dynamic>?;
 
@@ -36,6 +45,13 @@ class AppRouter {
             checklistId: args?["checklistId"],
             checklist: args?["checklist"],
           ),
+        );
+
+      case AppRoutes.templateDetails:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) =>
+              TemplateOverviewScreen(templateId: args['templateId'] as String),
         );
 
       case AppRoutes.checklistDetails:
@@ -77,7 +93,7 @@ class AppRouter {
           ),
         );
 
-        case AppRoutes.success:
+      case AppRoutes.success:
         final args = settings.arguments as Map<String, dynamic>?;
 
         return MaterialPageRoute(

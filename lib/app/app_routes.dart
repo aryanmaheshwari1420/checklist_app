@@ -6,7 +6,6 @@ class AppRoutes {
   static const dashboard = "/dashboard";
   static const search = '/search';
 
-
   static const createChecklist = "/create-checklist";
   static const checklistDetails = "/checklist-details";
   static const addCategories = "/add-categories";
@@ -15,4 +14,8 @@ class AppRoutes {
   static const success = "/success";
 
   static const viewChecklist = "/view-checklist";
+
+  static const templatesList = '/templates';
+  static const templateDetails = '/template-details';
+  static const searchTemplates = '/search-templates';
 }

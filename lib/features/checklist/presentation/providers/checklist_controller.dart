@@ -1,6 +1,7 @@
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_repository_provider.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_state.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:checklist_app/shared/models/template_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -206,4 +207,32 @@ class ChecklistController extends Notifier<ChecklistState> {
   void clear() {
     state = ChecklistState.initial();
   }
+
+  // ----------------------------------------------------------------templates----------------------------------------------------------------
+
+  /// Loads a template's structure (title, type, categories, items) into
+/// the draft state, ready for the create-checklist flow. The user still
+/// picks their own due date, priority, etc. in the following steps.
+void loadFromTemplate(TemplateModel template) {
+  final updatedItems = template.items.map((category, itemTitles) {
+    final checklistItems = itemTitles
+        .map((title) => ChecklistItem(title: title, checked: false))
+        .toList();
+    return MapEntry(category, checklistItems);
+  });
+
+  state = ChecklistState(
+    id: '',
+    title: template.title,
+    description: template.description,
+    dueDate: null,
+    type: template.type,
+    priority: "Medium",
+    reminderEnabled: false,
+    reminderDateTime: null,
+    notes: '',
+    categories: template.categories,
+    items: updatedItems,
+  );
+}
 }

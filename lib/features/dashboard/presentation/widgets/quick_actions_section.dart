@@ -35,7 +35,9 @@ class QuickActionsSection extends StatelessWidget {
             QuickActionCard(
               icon: Icons.description_outlined,
               title: "Templates",
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.templatesList);
+              },
             ),
           ],
         ),
@@ -48,7 +50,7 @@ class QuickActionsSection extends StatelessWidget {
               icon: Icons.search,
               title: "Search",
               onTap: () {
-                // Navigator.pushNamed(context, AppRoutes.search);
+                Navigator.pushNamed(context, AppRoutes.search);
               },
             ),
 
