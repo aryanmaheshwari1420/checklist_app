@@ -8,9 +8,6 @@ class TemplateRepository {
 
   final FirebaseFirestore _firestore;
 
-  // Templates are shared/public data, not tied to a specific user —
-  // stored in a top-level collection, unlike checklists which live
-  // under users/{uid}/checklists.
   CollectionReference<Map<String, dynamic>> get _templatesRef =>
       _firestore.collection('templates');
 
@@ -24,8 +21,6 @@ class TemplateRepository {
             .toList());
   }
 
-  /// Real-time stream of templates filtered by type (e.g. "Travel").
-  /// Pass null or "All" to get every template.
   Stream<List<TemplateModel>> watchTemplatesByType(String? type) {
     if (type == null || type == 'All') {
       return watchAllTemplates();
@@ -40,8 +35,6 @@ class TemplateRepository {
             .toList());
   }
 
-  /// Real-time stream of a single template by id — used by the
-  /// Template Overview screen.
   Stream<TemplateModel> watchTemplateById(String templateId) {
     return _templatesRef.doc(templateId).snapshots().map((doc) {
       if (!doc.exists) {
@@ -51,8 +44,6 @@ class TemplateRepository {
     });
   }
 
-  /// One-time fetch — useful for the bulk-import script or any place
-  /// where a live stream isn't needed.
   Future<TemplateModel> getTemplateById(String templateId) async {
     final doc = await _templatesRef.doc(templateId).get();
 
@@ -63,8 +54,6 @@ class TemplateRepository {
     return TemplateModel.fromMap(doc.data()!);
   }
 
-  /// Creates a new template document. Mainly used by the bulk-import
-  /// script or an admin flow — regular users only read templates.
   Future<String> createTemplate(TemplateModel template) async {
     final doc = _templatesRef.doc();
 
