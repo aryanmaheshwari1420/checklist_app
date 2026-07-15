@@ -204,10 +204,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                           int itemIndex = entry.key;
                           final ChecklistItem item = entry.value;
 
-                          return ListTile(
-                            leading: Checkbox(
+                          return CheckboxListTile(
                               value: item.checked,
-                              // The Checkbox is now styled by the theme
+                              controlAffinity:ListTileControlAffinity.leading,
                               onChanged: (value) {
                                 final updatedItem = item.copyWith(
                                   checked: value,
@@ -221,9 +220,8 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                       newItem: updatedItem,
                                     );
                               },
-                            ),
                             title: Text(item.title),
-                            trailing: PopupMenuButton<String>(
+                            secondary: PopupMenuButton<String>(
                               onSelected: (value) {
                                 if (value == "edit") {
                                   editItemDialog(category, itemIndex);

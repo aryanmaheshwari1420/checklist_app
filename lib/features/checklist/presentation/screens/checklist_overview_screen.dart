@@ -404,9 +404,10 @@ class _ChecklistOverviewScreenState
                               final itemIndex = entry.key;
                               final ChecklistItem item = entry.value;
 
-                              return ListTile(
-                                leading: Checkbox(
+                              return CheckboxListTile(
                                   value: item.checked,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
                                   onChanged: (value) {
                                     final notifier = ref.read(
                                       checklistControllerProvider.notifier,
@@ -422,9 +423,8 @@ class _ChecklistOverviewScreenState
                                     );
                                     notifier.updateChecklist();
                                   },
-                                ),
                                 title: Text(item.title),
-                                trailing: PopupMenuButton<String>(
+                                secondary: PopupMenuButton<String>(
                                   onSelected: (value) {
                                     if (value == "edit") {
                                       editItemDialog(
