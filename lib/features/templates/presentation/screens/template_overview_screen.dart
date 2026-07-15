@@ -81,23 +81,20 @@ Widget build(BuildContext context, WidgetRef ref) {
                 SizedBox(
                   height: 240,
                   width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 1),
-                    child: Image.asset(
-                      _imageForType(template.type),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: colorScheme.primaryContainer,
-                          alignment: Alignment.center,
-                          child: Icon(
-                            _iconForType(template.type),
-                            size: 56,
-                            color: colorScheme.primary,
-                          ),
-                        );
-                      },
-                    ),
+                  child: Image.asset(
+                    _imageForType(template.type),
+                    fit: BoxFit.fitWidth,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: colorScheme.primaryContainer,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          _iconForType(template.type),
+                          size: 56,
+                          color: colorScheme.primary,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Positioned(
@@ -122,7 +119,7 @@ Widget build(BuildContext context, WidgetRef ref) {
             // ---- Rest of the scrollable content ----
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 children: [
                   Row(
                     children: [
