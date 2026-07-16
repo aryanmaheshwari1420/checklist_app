@@ -207,7 +207,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                     borderRadius: BorderRadius.circular(14),
                     elevation: 3, 
                     dropdownColor: colorScheme.surfaceContainerHigh, //
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurface,
                     ),
                     items: categories.map((category) {
@@ -275,7 +275,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                             reminderDate == null
                                 ? "Select Reminder Date"
                                 : "${reminderDate!.day}/${reminderDate!.month}/${reminderDate!.year}",
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: textTheme.bodyMedium?.copyWith(
                               color: reminderDate == null
                                   ? colorScheme.onSurfaceVariant
                                   : colorScheme.onSurface,
@@ -306,7 +306,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                             reminderTime == null
                                 ? "Select Reminder Time"
                                 : reminderTime!.format(context),
-                            style: textTheme.bodyLarge?.copyWith(
+                            style: textTheme.bodyMedium?.copyWith(
                               color: reminderTime == null
                                   ? colorScheme.onSurfaceVariant
                                   : colorScheme.onSurface,

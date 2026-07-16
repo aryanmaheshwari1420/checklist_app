@@ -151,7 +151,8 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
         centerTitle: true,
         title: Text(
           widget.mode == ChecklistMode.create
-          ?"Create Checklist": "Edit Checklist",
+              ? "Create Checklist"
+              : "Edit Checklist",
         ),
       ),
       body: Padding(
@@ -159,15 +160,13 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Add Items in Categories",
-              style: textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
+            Text("Add Items in Categories", style: textTheme.headlineMedium),
+            const SizedBox(height: 12),
             Text(
               "Add checklist items for each category.",
-              style: textTheme.bodyLarge
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -187,8 +186,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                       initiallyExpanded: index == 0,
                       title: Text(
                         "$category (${categoryItemList.length})",
-                        style: textTheme.titleMedium
-                            ?.copyWith(color: colorScheme.primary),
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
                       ),
                       children: [
                         if (categoryItemList.isEmpty)
@@ -197,7 +197,8 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                             child: Text(
                               "No Items Added",
                               style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant),
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ...categoryItemList.asMap().entries.map((entry) {
@@ -205,23 +206,30 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                           final ChecklistItem item = entry.value;
 
                           return CheckboxListTile(
-                              value: item.checked,
-                              controlAffinity:ListTileControlAffinity.leading,
-                              onChanged: (value) {
-                                final updatedItem = item.copyWith(
-                                  checked: value,
-                                );
+                            contentPadding: const EdgeInsets.only(
+                              left: 8,
+                              right: 8,
+                            ),
 
-                                ref
-                                    .read(checklistControllerProvider.notifier)
-                                    .updateItem(
-                                      category: category,
-                                      oldItem: item,
-                                      newItem: updatedItem,
-                                    );
-                              },
+                            value: item.checked,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            onChanged: (value) {
+                              final updatedItem = item.copyWith(checked: value);
+
+                              ref
+                                  .read(checklistControllerProvider.notifier)
+                                  .updateItem(
+                                    category: category,
+                                    oldItem: item,
+                                    newItem: updatedItem,
+                                  );
+                            },
+
                             title: Text(item.title),
+
                             secondary: PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              iconSize: 22,
                               onSelected: (value) {
                                 if (value == "edit") {
                                   editItemDialog(category, itemIndex);
@@ -256,8 +264,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                 const SizedBox(width: 6),
                                 Text(
                                   "Add Item",
-                                  style: textTheme.labelLarge
-                                      ?.copyWith(color: colorScheme.primary),
+                                  style: textTheme.labelLarge?.copyWith(
+                                    color: colorScheme.primary,
+                                  ),
                                 ),
                               ],
                             ),

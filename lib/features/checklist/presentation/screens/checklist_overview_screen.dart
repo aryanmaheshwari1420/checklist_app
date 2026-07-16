@@ -456,6 +456,7 @@ class _ChecklistOverviewScreenState
                         final ChecklistItem item = entry.value;
 
                         return CheckboxListTile(
+                          contentPadding:  const EdgeInsets.only(left: 8, right: 8),
                           value: item.checked,
                           controlAffinity: ListTileControlAffinity.leading,
                           onChanged: (value) {

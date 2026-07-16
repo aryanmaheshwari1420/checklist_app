@@ -200,10 +200,10 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Add Categories", style: textTheme.headlineMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 "You can add multiple categories\none by one.",
-                style: textTheme.bodyLarge?.copyWith(
+                style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -294,44 +294,54 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   }
 
   Widget buildCategoryList() {
-  final textTheme = Theme.of(context).textTheme;
-  final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-  return ListView.builder(
-    itemCount: categories.length,
-    itemBuilder: (context, index) {
-      return Card(
-        margin: const EdgeInsets.only(bottom: 12),
+    return ListView.builder(
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  child: Row(
+    children: [
+      Expanded(
+        child: Text(
+          categories[index],
+          style: textTheme.titleMedium,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+
+      InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => editCategory(index),
+        child: const Padding(
+          padding: EdgeInsets.all(4),
+          child: Icon(Icons.edit_outlined, size: 22),
+        ),
+      ),
+
+      const SizedBox(width: 8),
+
+      InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => deleteCategory(index),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  categories[index],
-                  style: textTheme.titleMedium,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                visualDensity: VisualDensity.compact,
-                onPressed: () {
-                  editCategory(index);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: colorScheme.error),
-                visualDensity: VisualDensity.compact,
-                onPressed: () {
-                  deleteCategory(index);
-                },
-              ),
-            ],
+          padding: const EdgeInsets.all(4),
+          child: Icon(
+            Icons.delete_outline,
+            size: 22,
+            color: colorScheme.error,
           ),
         ),
-      );
-    },
-  );
-}
+      ),
+    ],
+  ),
+),
+        );
+      },
+    );
+  }
 }

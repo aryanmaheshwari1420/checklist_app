@@ -5,6 +5,7 @@ import 'package:checklist_app/features/checklist/presentation/providers/checklis
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CreateCheckListScreen extends ConsumerStatefulWidget {
@@ -218,26 +219,59 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                 const SizedBox(height: 8),
 
                 TextFormField(
-                  // All styling is now handled by inputDecorationTheme
-                  controller: nameController,
-                  focusNode: nameFocusNode,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  textInputAction: TextInputAction.next,
-                  onFieldSubmitted: (value) =>
-                      FocusScope.of(context).requestFocus(descriptionFocusNode),
-                  validator: (value) {
-                    final trimmed = value?.trim() ?? '';
-                    if (trimmed.isEmpty) {
-                      return "Checklist name is required";
-                    }
-                    final wordCount = trimmed.split(RegExp(r'\s+')).length;
-                    if (wordCount > 25) {
-                      return "Checklist name should be 25 words or fewer";
-                    }
-                    return null;
-                  },
-                  decoration: const InputDecoration(hintText: "Bali Trip"),
-                ),
+  controller: nameController,
+  focusNode: nameFocusNode,
+  autovalidateMode: AutovalidateMode.onUserInteraction,
+  textInputAction: TextInputAction.next,
+  maxLength: 26,
+  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+  inputFormatters: [
+    LengthLimitingTextInputFormatter(26),
+  ],
+
+  buildCounter: (
+    BuildContext context, {
+    required int currentLength,
+    required bool isFocused,
+    required int? maxLength,
+  }) {
+    return const SizedBox.shrink();
+  },
+
+  validator: (value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return "Checklist name is required";
+    }
+    return null;
+  },
+
+  decoration: InputDecoration(
+    hintText: "Bali Trip",
+    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+      valueListenable: nameController,
+      builder: (context, value, child) {
+        final length = value.text.length;
+
+        return Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+              "$length/26",
+              style: TextStyle(
+                color: length == 26
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+),
 
                 const SizedBox(height: 22),
 
