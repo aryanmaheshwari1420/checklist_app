@@ -4,17 +4,17 @@ import 'package:checklist_app/features/checklist/presentation/providers/checklis
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MoreDetailScreen extends ConsumerStatefulWidget {
+class ChecklistDetailScreen extends ConsumerStatefulWidget {
   final ChecklistMode mode;
   final String? checklistId;
 
-  const MoreDetailScreen({super.key, required this.mode, this.checklistId});
+  const ChecklistDetailScreen({super.key, required this.mode, this.checklistId});
 
   @override
-  ConsumerState<MoreDetailScreen> createState() => _MoreDetailScreenState();
+  ConsumerState<ChecklistDetailScreen> createState() => _ChecklistDetailScreenState();
 }
 
-class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
+class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
   final TextEditingController notesController = TextEditingController();
 
   final List<String> categories = [

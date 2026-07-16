@@ -2,9 +2,9 @@ import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/screens/login_screens/loginscreen.dart';
 import 'package:checklist_app/features/auth/presentation/screens/login_screens/sign_up_screen.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/category_selection_screen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/addCategory_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_details_screen.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/checklist_items_screen.dart';
+import 'package:checklist_app/features/checklist/presentation/screens/addItemCategory_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/create_checklist_screen.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
@@ -58,7 +58,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
 
         return MaterialPageRoute(
-          builder: (_) => MoreDetailScreen(
+          builder: (_) => ChecklistDetailScreen(
             mode: args?["mode"] ?? ChecklistMode.create,
             checklistId: args?["checklistId"],
           ),
