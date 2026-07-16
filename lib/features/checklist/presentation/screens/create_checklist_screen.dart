@@ -32,6 +32,9 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
+  final FocusNode nameFocusNode = FocusNode();
+  final FocusNode descriptionFocusNode = FocusNode();
+
   DateTime? selectedDate;
 
   Future<void> pickDate() async {
@@ -55,6 +58,15 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
     }
 
     return "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    nameFocusNode.dispose();
+    descriptionFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -125,7 +137,6 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Center(
                   child: Container(
                     width: 70,
@@ -209,10 +220,19 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                 TextFormField(
                   // All styling is now handled by inputDecorationTheme
                   controller: nameController,
+                  focusNode: nameFocusNode,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: (value) =>
+                      FocusScope.of(context).requestFocus(descriptionFocusNode),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
+                    final trimmed = value?.trim() ?? '';
+                    if (trimmed.isEmpty) {
                       return "Checklist name is required";
+                    }
+                    final wordCount = trimmed.split(RegExp(r'\s+')).length;
+                    if (wordCount > 25) {
+                      return "Checklist name should be 25 words or fewer";
                     }
                     return null;
                   },
@@ -226,9 +246,11 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                 const SizedBox(height: 8),
 
                 TextField(
-                  // All styling is now handled by inputDecorationTheme
                   controller: descriptionController,
+                  focusNode: descriptionFocusNode,
                   maxLines: 4,
+                  textInputAction: TextInputAction.done,
+                  onEditingComplete: () => FocusScope.of(context).unfocus(),
                   decoration: const InputDecoration(
                     hintText: "Checklist for our Bali trip preparation.",
                   ),
@@ -244,10 +266,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   onTap: pickDate,
                   borderRadius: BorderRadius.circular(14),
                   child: InputDecorator(
-                    decoration: const InputDecoration(
-                      // This automatically pulls colors, border, fill from
-                      // inputDecorationTheme — same as TextFormField
-                    ),
+                    decoration: const InputDecoration(),
                     child: Row(
                       children: [
                         Expanded(

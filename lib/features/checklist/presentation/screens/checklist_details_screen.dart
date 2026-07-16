@@ -326,6 +326,7 @@ class _MoreDetailScreenState extends ConsumerState<MoreDetailScreen> {
               TextField(
                 controller: notesController,
                 maxLines: 5,
+                textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   hintText: "Add additional notes...",
                 ),

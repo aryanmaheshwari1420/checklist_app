@@ -16,52 +16,57 @@ class QuickActionsSection extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        Row(
-          children: [
-            QuickActionCard(
-              icon: Icons.add_task,
-              title: "New\nChecklist",
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.createChecklist,
-                  arguments: {"mode": ChecklistMode.create, "showSkip": false},
-                );
-              },
-            ),
-
-            const SizedBox(width: 14),
-
-            QuickActionCard(
-              icon: Icons.description_outlined,
-              title: "Templates",
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.templatesList);
-              },
-            ),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              QuickActionCard(
+                icon: Icons.add_task,
+                title: "New\nChecklist",
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.createChecklist,
+                    arguments: {
+                      "mode": ChecklistMode.create,
+                      "showSkip": false,
+                    },
+                  );
+                },
+              ),
+              const SizedBox(width: 14),
+              QuickActionCard(
+                icon: Icons.description_outlined,
+                title: "Templates",
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.templatesList);
+                },
+              ),
+            ],
+          ),
         ),
 
         const SizedBox(height: 14),
 
-        Row(
-          children: [
-            QuickActionCard(
-              icon: Icons.search,
-              title: "Search",
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.search);
-              },
-            ),
-
-            const SizedBox(width: 14),
-
-            QuickActionCard(
-              icon: Icons.more_horiz,
-              title: "More",
-              onTap: () {},
-            ),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              QuickActionCard(
+                icon: Icons.search,
+                title: "Search",
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.search);
+                },
+              ),
+              const SizedBox(width: 14),
+              QuickActionCard(
+                icon: Icons.more_horiz,
+                title: "More",
+                onTap: () {},
+              ),
+            ],
+          ),
         ),
       ],
     );

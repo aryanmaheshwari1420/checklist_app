@@ -7,17 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddCategoryScreen extends ConsumerStatefulWidget {
-
   final ChecklistMode mode;
   final String? checklistId;
   final ChecklistModel? checklist;
-
 
   const AddCategoryScreen({
     super.key,
     required this.mode,
     this.checklistId,
-    this.checklist
+    this.checklist,
   });
 
   @override
@@ -41,6 +39,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
       });
     }
   }
+
   List<String> get categories =>
       ref.read(checklistControllerProvider).categories;
 
@@ -61,12 +60,19 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                FocusScope.of(context).unfocus();
+                await Future.delayed(const Duration(milliseconds: 100));
+                if (context.mounted) Navigator.pop(context);
+              },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final value = controller.text.trim();
+
+                FocusScope.of(context).unfocus();
+                await Future.delayed(const Duration(milliseconds: 100));
 
                 if (value.isNotEmpty) {
                   ref
@@ -74,7 +80,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                       .addCategory(value);
                 }
 
-                Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               },
               child: const Text("Save"),
             ),
@@ -103,12 +109,19 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                FocusScope.of(context).unfocus();
+                await Future.delayed(const Duration(milliseconds: 100));
+                if (context.mounted) Navigator.pop(context);
+              },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final value = controller.text.trim();
+
+                FocusScope.of(context).unfocus();
+                await Future.delayed(const Duration(milliseconds: 100));
 
                 if (value.isNotEmpty) {
                   ref
@@ -119,7 +132,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                       );
                 }
 
-                Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               },
               child: const Text("Update"),
             ),
@@ -176,7 +189,8 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
         centerTitle: true,
         title: Text(
           widget.mode == ChecklistMode.create
-          ?"Create Checklist": "Edit Checklist",
+              ? "Create Checklist"
+              : "Edit Checklist",
         ),
       ),
       body: SafeArea(
@@ -185,15 +199,13 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Add Categories",
-                style: textTheme.headlineMedium,
-              ),
+              Text("Add Categories", style: textTheme.headlineMedium),
               const SizedBox(height: 8),
               Text(
                 "You can add multiple categories\none by one.",
-                style: textTheme.bodyLarge
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 25),
               Expanded(
@@ -233,11 +245,14 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                       onPressed: categories.isEmpty
                           ? null
                           : () {
-                              Navigator.pushNamed(context, AppRoutes.addItems,
-                                  arguments: {
-                                    'mode': widget.mode,
-                                    'checklistId': widget.checklistId,
-                                  });
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.addItems,
+                                arguments: {
+                                  'mode': widget.mode,
+                                  'checklistId': widget.checklistId,
+                                },
+                              );
                             },
                       child: const Text("Next"),
                     ),
@@ -259,18 +274,19 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.folder_open_outlined,
-              size: 80, color: colorScheme.onSurface.withOpacity(0.4)),
-          const SizedBox(height: 20),
-          Text(
-            "No Categories Yet",
-            style: textTheme.headlineSmall,
+          Icon(
+            Icons.folder_open_outlined,
+            size: 80,
+            color: colorScheme.onSurface.withOpacity(0.4),
           ),
+          const SizedBox(height: 20),
+          Text("No Categories Yet", style: textTheme.headlineSmall),
           const SizedBox(height: 10),
           Text(
             "Create your first category.",
-            style: textTheme.bodyLarge
-                ?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -278,40 +294,44 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   }
 
   Widget buildCategoryList() {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+  final textTheme = Theme.of(context).textTheme;
+  final colorScheme = Theme.of(context).colorScheme;
 
-    return ListView.builder(
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          // The Card is now styled by the theme's `cardTheme`
-          child: ListTile(
-            title: Text(
-              categories[index],
-              style: textTheme.titleMedium,
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () {
-                    editCategory(index);
-                  },
+  return ListView.builder(
+    itemCount: categories.length,
+    itemBuilder: (context, index) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  categories[index],
+                  style: textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                IconButton(
-                  icon: Icon(Icons.delete_outline, color: colorScheme.error),
-                  onPressed: () {
-                    deleteCategory(index);
-                  },
-                ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                visualDensity: VisualDensity.compact,
+                onPressed: () {
+                  editCategory(index);
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: colorScheme.error),
+                visualDensity: VisualDensity.compact,
+                onPressed: () {
+                  deleteCategory(index);
+                },
+              ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }
