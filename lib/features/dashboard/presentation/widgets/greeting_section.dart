@@ -20,17 +20,14 @@ class GreetingSection extends StatelessWidget {
       children: [
         Text(
           "Hello, $name 👋",
-          style: textTheme.headlineSmall,
+          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
-
         const SizedBox(height: 4),
-
         Text(
-          hasChecklist
-              ? "Here's your overview"
-              : "Stay organized, stay ahead!",
-          style: textTheme.bodyLarge
-              ?.copyWith(color: colorScheme.onSurfaceVariant),
+          hasChecklist ? "Here's your overview" : "Stay organized, stay ahead!",
+          style: textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

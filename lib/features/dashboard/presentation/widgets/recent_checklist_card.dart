@@ -9,7 +9,9 @@ class RecentChecklistCard extends StatelessWidget {
     required this.status,
     required this.onTap,
     this.dueDate,
-    this.icon = Icons.checklist_rtl_outlined,
+    this.imagePath,
+    this.fallbackIcon = Icons.checklist_rtl_outlined,
+    this.onDelete,
   });
 
   final String title;
@@ -18,17 +20,28 @@ class RecentChecklistCard extends StatelessWidget {
   final String status;
   final VoidCallback onTap;
   final DateTime? dueDate;
-  final IconData icon;
+  final String? imagePath;
+  final IconData fallbackIcon;
+  final VoidCallback? onDelete;
 
   bool get _hasItems => total > 0;
-
 
   String? get _formattedDueDate {
     if (dueDate == null) return null;
 
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
     return "${dueDate!.day} ${months[dueDate!.month - 1]}";
@@ -43,7 +56,6 @@ class RecentChecklistCard extends StatelessWidget {
     final todayOnly = DateTime(today.year, today.month, today.day);
 
     return dueDateOnly.isBefore(todayOnly);
-
   }
 
   Color _statusColor(ColorScheme colorScheme) {
@@ -61,6 +73,39 @@ class RecentChecklistCard extends StatelessWidget {
     }
   }
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Checklist"),
+          content: Text(
+            "Are you sure you want to delete '$title'?\n\nThis action cannot be undone.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.error,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      onDelete?.call();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final progress = total == 0 ? 0.0 : completed / total;
@@ -69,7 +114,6 @@ class RecentChecklistCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final statusColor = _statusColor(colorScheme);
     final trackColor = colorScheme.primary.withValues(alpha: 0.15);
-
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -81,18 +125,37 @@ class RecentChecklistCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ---- Top row: icon, title, due date, status chip ----
+              // ---- Top row: icon, title, due date, status chip, menu ----
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     height: 42,
                     width: 42,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.12),
+                      color: statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, color: statusColor, size: 20),
+                    child: imagePath != null
+                        ? Image.asset(
+                            imagePath!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                fallbackIcon,
+                                color: statusColor,
+                                size: 20,
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Icon(
+                              fallbackIcon,
+                              color: statusColor,
+                              size: 20,
+                            ),
+                          ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -103,8 +166,9 @@ class RecentChecklistCard extends StatelessWidget {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         if (_formattedDueDate != null) ...[
                           const SizedBox(height: 3),
@@ -137,7 +201,45 @@ class RecentChecklistCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (_hasItems) _StatusChip(status: status, color: statusColor),
+                  if (_hasItems)
+                    _StatusChip(status: status, color: statusColor),
+                  if (onDelete != null)
+                    SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: PopupMenuButton<String>(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          Icons.more_vert,
+                          size: 20,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        onSelected: (value) {
+                          if (value == "delete") {
+                            _confirmDelete(context);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: "delete",
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.delete_outline,
+                                  color: colorScheme.error,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Delete",
+                                  style: TextStyle(color: colorScheme.error),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
 
@@ -153,8 +255,7 @@ class RecentChecklistCard extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 7,
-                          backgroundColor:
-                              trackColor,
+                          backgroundColor: trackColor,
                           valueColor: AlwaysStoppedAnimation(statusColor),
                         ),
                       ),
@@ -172,8 +273,9 @@ class RecentChecklistCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   "$completed of $total completed",
-                  style: textTheme.bodySmall
-                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ] else
                 Row(
@@ -202,10 +304,7 @@ class RecentChecklistCard extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({
-    required this.status,
-    required this.color,
-  });
+  const _StatusChip({required this.status, required this.color});
 
   final String status;
   final Color color;

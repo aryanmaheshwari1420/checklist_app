@@ -1,6 +1,7 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/dashboard_app_bar.dart';
@@ -15,6 +16,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+
+  String _imageForType(String type) {
+    switch (type) {
+      case "Travel":
+        return "assets/images/Traveli.png";
+      case "Finance":
+        return "assets/images/financei.png";
+      case "Vehicle":
+        return "assets/images/vehiclei.png";
+      case "Event":
+        return "assets/images/Eventi.png";
+      case "Personal":
+        return "assets/images/personali.png";
+      case "Charity":
+        return "assets/images/Charityi.png";
+      case "Split":
+        return "assets/images/Spliti.png";
+      case "Vendor":
+        return "assets/images/Vendori.png";
+      case "Other":
+        return "assets/images/other_twoi.png";
+      default:
+        return "assets/images/other_twoi.png";
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,21 +148,21 @@ class DashboardScreen extends ConsumerWidget {
                       icon: Icons.assignment_outlined,
                       iconColor: colorScheme.primary,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     SummaryCard(
                       title: "Completed",
                       value: completed,
                       icon: Icons.check_circle_outline,
                       iconColor: colorScheme.tertiary,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     SummaryCard(
                       title: "Pending",
                       value: pending,
                       icon: Icons.access_time,
                       iconColor: Colors.orange,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     SummaryCard(
                       title: "Overdue",
                       value: 0,
@@ -193,6 +220,7 @@ class DashboardScreen extends ConsumerWidget {
                       completed: completedItems,
                       total: totalItems,
                       status: status,
+                      imagePath: _imageForType(checklist.type),
                       dueDate: checklist.dueDate,
                       onTap: () {
                         Navigator.push(
@@ -203,6 +231,21 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ),
                         );
+                      },
+                      onDelete: () async {
+                        await ref
+                            .read(checklistControllerProvider.notifier)
+                            .deleteChecklist(checklist.id);
+
+                        ref.invalidate(dashboardProvider);
+
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Checklist deleted successfully."),
+                            ),
+                          );
+                        }
                       },
                     );
                   }),

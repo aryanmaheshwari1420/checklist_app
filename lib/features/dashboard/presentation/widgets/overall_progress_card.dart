@@ -18,42 +18,57 @@ class OverallProgressCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Light, contrasting track color derived from primary
     final trackColor = colorScheme.primary.withValues(alpha: 0.15);
 
     return Card(
-      child: Padding(
+      margin: EdgeInsets.zero,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              colorScheme.primaryContainer.withOpacity(0.35),
+              colorScheme.surface,
+            ],
+          ),
+        ),
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "Overall Progress",
-              style: textTheme.titleLarge,
+              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
                 SizedBox(
-                  height: 90,
-                  width: 90,
+                  height: 88,
+                  width: 88,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       SizedBox(
-                        height: 90,
-                        width: 90,
+                        height: 88,
+                        width: 88,
                         child: CircularProgressIndicator(
                           value: progress,
-                          strokeWidth: 8,
+                          strokeWidth: 9,
+                          strokeCap: StrokeCap.round,
                           backgroundColor: trackColor,
-                          valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                          valueColor:
+                              AlwaysStoppedAnimation(colorScheme.primary),
                         ),
                       ),
                       Text(
                         "$percentage%",
-                        style: textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: colorScheme.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -63,19 +78,39 @@ class OverallProgressCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      RichText(
+                        text: TextSpan(
+                          style: textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: colorScheme.onSurface,
+                          ),
+                          children: [
+                            TextSpan(text: "$completed"),
+                            TextSpan(
+                              text: " / $total",
+                              style: textTheme.titleMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 2),
                       Text(
-                        "$completed of $total items completed",
-                        style: textTheme.bodyLarge
+                        "items completed",
+                        style: textTheme.bodyMedium
                             ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 8,
                           backgroundColor: trackColor,
-                          valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+                          valueColor:
+                              AlwaysStoppedAnimation(colorScheme.primary),
                         ),
                       ),
                     ],

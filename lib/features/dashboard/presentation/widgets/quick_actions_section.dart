@@ -59,12 +59,12 @@ class QuickActionsSection extends StatelessWidget {
                   Navigator.pushNamed(context, AppRoutes.search);
                 },
               ),
-              const SizedBox(width: 14),
-              QuickActionCard(
-                icon: Icons.more_horiz,
-                title: "More",
-                onTap: () {},
-              ),
+              // const SizedBox(width: 14),
+              // QuickActionCard(
+              //   icon: Icons.more_horiz,
+              //   title: "More",
+              //   onTap: () {},
+              // ),
             ],
           ),
         ),

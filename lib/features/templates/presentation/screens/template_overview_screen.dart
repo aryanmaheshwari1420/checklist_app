@@ -131,13 +131,14 @@ class TemplateOverviewScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
+
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: colorScheme.primary.withOpacity(0.12),
+                            color: colorScheme.primary.withValues(alpha:0.12),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: Text(
