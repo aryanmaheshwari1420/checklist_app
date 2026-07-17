@@ -198,7 +198,7 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(width: 8),
                     SummaryCard(
                       title: "Overdue",
-                      value: 0,
+                      value: overdue,
                       icon: Icons.calendar_today_outlined,
                       iconColor: colorScheme.error,
                       illustrationAsset: 'assets/images/warning_icon.png',
