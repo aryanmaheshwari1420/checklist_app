@@ -81,7 +81,10 @@ class AllChecklistsScreen extends ConsumerWidget {
                   Navigator.pushNamed(
                     context,
                     AppRoutes.viewChecklist,
-                    arguments: checklist.id,
+                    arguments: {
+                      'checklistId': checklist.id,
+                      'camefromViewAll': true,
+                    },
                   );
                 },
                 onDelete: () async {

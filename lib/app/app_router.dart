@@ -79,10 +79,13 @@ class AppRouter {
         );
 
       case AppRoutes.viewChecklist:
-        final checklistId = settings.arguments as String;
+      final args = settings.arguments as Map<String, dynamic>?;
 
         return MaterialPageRoute(
-          builder: (_) => ChecklistOverviewScreen(checklistId: checklistId),
+          builder: (_) => ChecklistOverviewScreen(
+            checklistId: args?["checklistId"],
+            camefromViewAll  : args?["camefromViewAll"] ?? false
+          )
         );
 
       case AppRoutes.createChecklist:
