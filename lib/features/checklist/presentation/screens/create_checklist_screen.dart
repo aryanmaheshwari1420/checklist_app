@@ -219,59 +219,66 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                 const SizedBox(height: 8),
 
                 TextFormField(
-  controller: nameController,
-  focusNode: nameFocusNode,
-  autovalidateMode: AutovalidateMode.onUserInteraction,
-  textInputAction: TextInputAction.next,
-  maxLength: 26,
-  maxLengthEnforcement: MaxLengthEnforcement.enforced,
-  inputFormatters: [
-    LengthLimitingTextInputFormatter(26),
-  ],
+                  controller: nameController,
+                  focusNode: nameFocusNode,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  textInputAction: TextInputAction.next,
+                  maxLength: 26,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  inputFormatters: [LengthLimitingTextInputFormatter(26)],
 
-  buildCounter: (
-    BuildContext context, {
-    required int currentLength,
-    required bool isFocused,
-    required int? maxLength,
-  }) {
-    return const SizedBox.shrink();
-  },
+                  buildCounter:
+                      (
+                        BuildContext context, {
+                        required int currentLength,
+                        required bool isFocused,
+                        required int? maxLength,
+                      }) {
+                        return const SizedBox.shrink();
+                      },
 
-  validator: (value) {
-    final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) {
-      return "Checklist name is required";
-    }
-    return null;
-  },
+                  validator: (value) {
+                    final trimmed = value?.trim() ?? '';
+                    if (trimmed.isEmpty) {
+                      return "Checklist name is required";
+                    }
+                    return null;
+                  },
 
-  decoration: InputDecoration(
-    hintText: "Bali Trip",
-    suffixIcon: ValueListenableBuilder<TextEditingValue>(
-      valueListenable: nameController,
-      builder: (context, value, child) {
-        final length = value.text.length;
+                  decoration: InputDecoration(
+                    hintText: "Bali Trip",
+                    hintStyle: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.28), // Fade effect
+                    ),
 
-        return Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Center(
-            widthFactor: 1,
-            child: Text(
-              "$length/26",
-              style: TextStyle(
-                color: length == 26
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.primary.withOpacity(0.6),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        );
-      },
-    ),
-  ),
-),
+                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: nameController,
+                      builder: (context, value, child) {
+                        final length = value.text.length;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Center(
+                            widthFactor: 1,
+                            child: Text(
+                              "$length/26",
+                              style: TextStyle(
+                                color: length == 26
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.primary.withOpacity(0.6),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
 
                 const SizedBox(height: 22),
 
@@ -285,8 +292,13 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   maxLines: 4,
                   textInputAction: TextInputAction.done,
                   onEditingComplete: () => FocusScope.of(context).unfocus(),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: "Checklist for our Bali trip preparation.",
+                    hintStyle: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.28), // Fade effect
+                    ),
                   ),
                 ),
 
@@ -308,8 +320,10 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                             formattedDate,
                             style: textTheme.bodyMedium?.copyWith(
                               color: selectedDate == null
-                                  ? colorScheme.onSurfaceVariant
-                                  : colorScheme.onSurface,
+                                  ? colorScheme.onSurfaceVariant.withOpacity(
+                                      0.28,
+                                    )
+                                  : colorScheme.onSurface.withOpacity(0.28),
                             ),
                           ),
                         ),
