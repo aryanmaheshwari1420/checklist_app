@@ -1,6 +1,5 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/recent_checklist_card.dart';
 import 'package:flutter/material.dart';
