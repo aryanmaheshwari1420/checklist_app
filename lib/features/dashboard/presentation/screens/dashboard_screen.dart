@@ -66,6 +66,12 @@ class DashboardScreen extends ConsumerWidget {
         int pending = 0;
         int totalItems = 0;
         int checkedItems = 0;
+        int overdue = 0;
+
+        final today = DateTime.now();
+        final todayOnly = DateTime(today.year,today.month,today.day);
+
+        // Calculate
 
         for (final checklist in checklists) {
           int checklistTotal = 0;
@@ -79,10 +85,24 @@ class DashboardScreen extends ConsumerWidget {
           totalItems += checklistTotal;
           checkedItems += checklistCompleted;
 
-          if (checklistTotal > 0 && checklistCompleted == checklistTotal) {
+          final isCompleted =  checklistTotal > 0 && checklistCompleted == checklistTotal;
+
+
+          if (isCompleted) {
             completed++;
           } else {
             pending++;
+          }
+
+          if(!isCompleted && checklist.dueDate!=null){
+            final dueDateOnly =  DateTime(
+              checklist.dueDate!.year,
+              checklist.dueDate!.month,
+              checklist.dueDate!.day
+            );
+            if(dueDateOnly.isBefore(todayOnly)){
+            overdue++;
+          }
           }
         }
 
