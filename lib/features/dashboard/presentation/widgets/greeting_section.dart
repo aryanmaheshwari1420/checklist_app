@@ -15,19 +15,38 @@ class GreetingSection extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          "Hello, $name 👋",
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          hasChecklist ? "Here's your overview" : "Stay organized, stay ahead!",
-          style: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Hello, $name 👋",
+                style:
+                    textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                hasChecklist
+                    ? "Here's your overview"
+                    : "Stay organized, stay ahead!",
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
+        ),
+        const SizedBox(width: 12),
+        // Decorative plant + clipboard illustration on the right.
+        // Replace the path below with your actual asset from pubspec.yaml.
+        Image.asset(
+          'assets/images/overview_plant.png',
+          height: 78,
+          width: 78,
+          fit: BoxFit.contain,
         ),
       ],
     );

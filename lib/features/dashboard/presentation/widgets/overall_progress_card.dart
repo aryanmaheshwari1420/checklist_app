@@ -73,7 +73,7 @@ class OverallProgressCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,7 +81,6 @@ class OverallProgressCard extends StatelessWidget {
                       RichText(
                         text: TextSpan(
                           style: textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
                             color: colorScheme.onSurface,
                           ),
                           children: [
@@ -115,6 +114,13 @@ class OverallProgressCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(width: 8),
+                Image.asset(
+                  'assets/images/overall_progress_plant.png',
+                  height: 72,
+                  width: 72,
+                  fit: BoxFit.contain,
                 ),
               ],
             ),

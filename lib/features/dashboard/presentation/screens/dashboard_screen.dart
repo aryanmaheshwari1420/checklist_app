@@ -17,7 +17,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
-
   String _imageForType(String type) {
     switch (type) {
       case "Travel":
@@ -101,16 +100,19 @@ class DashboardScreen extends ConsumerWidget {
           // The FAB is now styled by the theme's `floatingActionButtonTheme`
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
-
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                AppRoutes.createChecklist,
-                arguments: {"mode": ChecklistMode.create, "showSkip": false},
-              );
-            },
-            child: const Icon(Icons.add),
+          floatingActionButton: SizedBox(
+            width: 48,
+            height: 48,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.createChecklist,
+                  arguments: {"mode": ChecklistMode.create, "showSkip": false},
+                );
+              },
+              child: const Icon(Icons.add, size: 24),
+            ),
           ),
 
           bottomNavigationBar: DashboardBottomNavigation(
@@ -147,27 +149,31 @@ class DashboardScreen extends ConsumerWidget {
                       value: total,
                       icon: Icons.assignment_outlined,
                       iconColor: colorScheme.primary,
+                      illustrationAsset: 'assets/images/completed.png',
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     SummaryCard(
                       title: "Completed",
                       value: completed,
                       icon: Icons.check_circle_outline,
                       iconColor: colorScheme.tertiary,
+                      illustrationAsset: 'assets/images/line_chart.png',
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     SummaryCard(
                       title: "Pending",
                       value: pending,
                       icon: Icons.access_time,
                       iconColor: Colors.orange,
+                      illustrationAsset: 'assets/images/bar_chart.png',
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     SummaryCard(
                       title: "Overdue",
                       value: 0,
                       icon: Icons.calendar_today_outlined,
                       iconColor: colorScheme.error,
+                      illustrationAsset: 'assets/images/warning_icon.png',
                     ),
                   ],
                 ),
@@ -186,7 +192,18 @@ class DashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: 28),
 
-                Text("Recent Checklists", style: textTheme.titleLarge),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Active Checklists", style: textTheme.titleLarge),
+                    Text(
+                      "View All",
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
 
                 const SizedBox(height: 18),
 

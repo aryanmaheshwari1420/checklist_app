@@ -17,40 +17,60 @@ class DashboardBottomNavigation extends StatelessWidget {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: 8,
-      padding: EdgeInsets.all(8), // let SafeArea control the inner spacing
+      padding: const EdgeInsets.all(8),
       child: SafeArea(
-        top: false, // only care about bottom inset (home indicator / gesture bar)
-        child: SizedBox(
-          height: 64, // slightly reduced so icon+text+padding fit comfortably
-          child: Row(
-            children: [
-              _buildItem(
-                context: context,
-                index: 0,
-                icon: Icons.home_filled,
-                label: "Dashboard",
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final gapWidth = (constraints.maxWidth * 0.14).clamp(48.0, 64.0);
+            final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+            final barHeight = 64.0 * textScale.clamp(1.0, 1.15);
+
+            return SizedBox(
+              height: barHeight,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: _buildItem(
+                      context: context,
+                      index: 0,
+                      icon: Icons.home_filled,
+                      label: "Dashboard",
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: _buildItem(
+                      context: context,
+                      index: 1,
+                      icon: Icons.description_outlined,
+                      label: "Templates",
+                    ),
+                  ),
+                  SizedBox(width: gapWidth),
+                  Expanded(
+                    flex: 1,
+                    child: _buildItem(
+                      context: context,
+                      index: 2,
+                      icon: Icons.search,
+                      label: "Search",
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: _buildItem(
+                      context: context,
+                      index: 3,
+                      icon: Icons.more_horiz,
+                      label: "More",
+                    ),
+                  ),
+                ],
               ),
-              _buildItem(
-                context: context,
-                index: 1,
-                icon: Icons.description_outlined,
-                label: "Templates",
-              ),
-              const Spacer(),
-              _buildItem(
-                context: context,
-                index: 2,
-                icon: Icons.search,
-                label: "Search",
-              ),
-              _buildItem(
-                context: context,
-                index: 3,
-                icon: Icons.more_horiz,
-                label: "More",
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -66,28 +86,33 @@ class DashboardBottomNavigation extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final color = selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
 
-    return Expanded(
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: () => onTap(index),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4), // reduced from 6
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // don't force extra height
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 20, // slightly smaller
+                size: 20,
                 color: color,
               ),
               const SizedBox(height: 4),
               Text(
                 label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 10.5,
                   color: color,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  height: 1.0, // tighter line height, avoids extra vertical space
+                  height: 1.0,
                 ),
               ),
             ],

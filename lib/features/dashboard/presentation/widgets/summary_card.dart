@@ -7,13 +7,14 @@ class SummaryCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.iconColor,
+    this.illustrationAsset,
   });
 
   final String title;
   final int value;
   final IconData icon;
   final Color iconColor;
-
+  final String? illustrationAsset;
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -23,7 +24,7 @@ class SummaryCard extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.zero,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -40,8 +41,7 @@ class SummaryCard extends StatelessWidget {
               Text(
                 value.toString(),
                 style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colorScheme.onSurface,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 2),
@@ -55,6 +55,11 @@ class SummaryCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+
+              if(illustrationAsset!=null)...[
+                const SizedBox(height: 8),
+                SizedBox(height:22, child: Image.asset(illustrationAsset!,fit: BoxFit.contain),)
+              ] 
             ],
           ),
         ),

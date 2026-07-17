@@ -38,7 +38,7 @@ class QuickActionCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: textTheme.labelLarge,
+                  style: textTheme.labelMedium,
                 ),
               ],
             ),

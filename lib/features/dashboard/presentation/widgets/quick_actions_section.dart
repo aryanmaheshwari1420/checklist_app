@@ -42,16 +42,7 @@ class QuickActionsSection extends StatelessWidget {
                   Navigator.pushNamed(context, AppRoutes.templatesList);
                 },
               ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 14),
-
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+              const SizedBox(width: 14),
               QuickActionCard(
                 icon: Icons.search,
                 title: "Search",
@@ -59,6 +50,8 @@ class QuickActionsSection extends StatelessWidget {
                   Navigator.pushNamed(context, AppRoutes.search);
                 },
               ),
+              // "More" intentionally hidden for now — uncomment below
+              // and re-add when that screen is ready.
               // const SizedBox(width: 14),
               // QuickActionCard(
               //   icon: Icons.more_horiz,
