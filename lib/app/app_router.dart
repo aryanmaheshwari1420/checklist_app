@@ -10,6 +10,7 @@ import 'package:checklist_app/features/checklist/presentation/screens/create_che
 import 'package:checklist_app/features/checklist/presentation/screens/success_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/screens/search_screen.dart';
+import 'package:checklist_app/features/dashboard/presentation/screens/viewall_checklist_screen.dart';
 import 'package:checklist_app/features/templates/presentation/screens/template_overview_screen.dart';
 import 'package:checklist_app/features/templates/presentation/screens/template_search_screen.dart';
 import 'package:checklist_app/features/templates/presentation/screens/templates_list_screen.dart';
@@ -35,6 +36,9 @@ class AppRouter {
 
       case AppRoutes.searchTemplates:
         return MaterialPageRoute(builder: (_) => const TemplateSearchScreen());  
+
+      case AppRoutes.viewAllChecklist:
+        return MaterialPageRoute(builder: (_) => const AllChecklistsScreen());    
 
       case AppRoutes.addCategories:
         final args = settings.arguments as Map<String, dynamic>?;

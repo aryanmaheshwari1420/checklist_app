@@ -18,4 +18,5 @@ class AppRoutes {
   static const templatesList = '/templates';
   static const templateDetails = '/template-details';
   static const searchTemplates = '/search-templates';
+  static const viewAllChecklist = "/view-all-checklist";
 }

@@ -14,6 +14,8 @@ import 'package:checklist_app/features/dashboard/presentation/widgets/summary_ca
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+const int _dashboardChecklistPreviewCount = 4;
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -88,6 +90,13 @@ class DashboardScreen extends ConsumerWidget {
         final overallProgress = totalItems == 0
             ? 0.0
             : checkedItems / totalItems;
+
+        // Only preview the first N checklists on the dashboard itself.
+        final previewChecklists = checklists
+            .take(_dashboardChecklistPreviewCount)
+            .toList();
+        final hasMoreChecklists =
+            checklists.length > _dashboardChecklistPreviewCount;
 
         return Scaffold(
           // The background color and AppBar style are now handled by the theme
@@ -196,12 +205,29 @@ class DashboardScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("Active Checklists", style: textTheme.titleLarge),
-                    Text(
-                      "View All",
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.primary,
+                    // Only show "View All" when there's actually more to see.
+                    if (hasMoreChecklists)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.viewAllChecklist,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            "View All",
+                            style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
 
@@ -213,7 +239,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: Center(child: Text("No checklists created yet.")),
                   )
                 else
-                  ...checklists.map((checklist) {
+                  ...previewChecklists.map((checklist) {
                     int totalItems = 0;
                     int completedItems = 0;
 
@@ -240,13 +266,10 @@ class DashboardScreen extends ConsumerWidget {
                       imagePath: _imageForType(checklist.type),
                       dueDate: checklist.dueDate,
                       onTap: () {
-                        Navigator.push(
+                        Navigator.pushNamed(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => ChecklistOverviewScreen(
-                              checklistId: checklist.id,
-                            ),
-                          ),
+                          AppRoutes.viewChecklist,
+                          arguments: checklist.id,
                         );
                       },
                       onDelete: () async {
