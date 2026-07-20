@@ -7,27 +7,24 @@ class DashboardRepositoryImpl implements DashboardRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  DashboardRepositoryImpl({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance;
+  DashboardRepositoryImpl({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
   @override
-  Future<List<ChecklistModel>> getUserChecklists() async {
+  Stream<List<ChecklistModel>> watchUserChecklists() {
     final uid = _auth.currentUser!.uid;
 
-    final snapshot = await _firestore
+    return _firestore
         .collection("users")
         .doc(uid)
         .collection("checklists")
         .orderBy("createdAt", descending: true)
-        .get();
-
-    return snapshot.docs
+        .snapshots()
         .map(
-          (doc) => ChecklistModel.fromMap(doc.data()),
-        )
-        .toList();
+          (snapshot) => snapshot.docs
+              .map((doc) => ChecklistModel.fromMap(doc.data()))
+              .toList(),
+        );
   }
 }

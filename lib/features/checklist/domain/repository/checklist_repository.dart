@@ -1,6 +1,8 @@
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class ChecklistRepository {
   ChecklistRepository({
@@ -21,11 +23,13 @@ class ChecklistRepository {
         .collection('checklists')
         .doc();
 
-    await doc.set({
+    doc.set({
       ...checklist.toMap(),
       'id': doc.id,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+    }).catchError((e){
+        debugPrint("Background sync failed for checklist ${doc.id}: $e");
     });
     return doc.id;
   }
@@ -33,42 +37,54 @@ class ChecklistRepository {
 
   Future<void> updateChecklist(ChecklistModel checklist) async {
     // Later
-    await _firestore
+     _firestore
       .collection("users")
       .doc(_auth.currentUser!.uid)
       .collection("checklists")
       .doc(checklist.id)
-      .update(checklist.toMap());
+      .update(checklist.toMap())
+      .catchError((e){
+                debugPrint("Background sync failed for checklist ${checklist.id}: $e");
+
+      });
+
+      return;
   }
 
   Future<void> deleteChecklist(String checklistId) async {
     // Later
-    await _firestore
+     _firestore
       .collection("users")
       .doc(_auth.currentUser!.uid)
       .collection("checklists")
       .doc(checklistId)
-      .delete();
+      .delete()
+      .catchError((e){
+      debugPrint("Background sync failed for checklist delete $checklistId: $e");
+
+      });
+
+    return;
   }
 
-  Future<ChecklistModel> getChecklistById(
-    String checklistId,
-) async {
-    final uid = _auth.currentUser!.uid;
+//   Future<ChecklistModel> getChecklistById(
+//     String checklistId,
+// ) async {
+//     final uid = _auth.currentUser!.uid;
 
-    final doc = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('checklists')
-        .doc(checklistId)
-        .get();
+//     final doc = await _firestore
+//         .collection('users')
+//         .doc(uid)
+//         .collection('checklists')
+//         .doc(checklistId)
+//         .get();
 
-    if (!doc.exists) {
-      throw Exception('Checklist not found');
-    }
+//     if (!doc.exists) {
+//       throw Exception('Checklist not found');
+//     }
 
-    return ChecklistModel.fromMap(doc.data()!);
-  }
+//     return ChecklistModel.fromMap(doc.data()!);
+//   }
 
   Stream<ChecklistModel> watchChecklistById(String checklistId) {
   final uid = _auth.currentUser!.uid;

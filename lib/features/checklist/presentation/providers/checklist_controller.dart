@@ -17,34 +17,28 @@ class ChecklistController extends Notifier<ChecklistState> {
   }
 
   Future<String?> createChecklist() async {
-    try {
       final repository = ref.read(checklistRepositoryProvider);
 
-      final checklistId = await repository.createChecklist(
-        state.toChecklistModel(),
-      );
-
+      final checklistId = await repository
+      .createChecklist(state.toChecklistModel())
+        .timeout(const Duration(seconds: 5));
       clear();
 
       return checklistId;
-    } catch (e) {
-      debugPrint(e.toString());
-      return null;
-    }
   }
 
-  Future<ChecklistModel?> getChecklistById(String checklistId) async {
-    try {
-      final repository = ref.read(checklistRepositoryProvider);
+  // Future<ChecklistModel?> getChecklistById(String checklistId) async {
+  //   try {
+  //     final repository = ref.read(checklistRepositoryProvider);
 
-      final checklist = await repository.getChecklistById(checklistId);
+  //     final checklist = await repository.getChecklistById(checklistId);
 
-      return checklist;
-    } catch (e) {
-      debugPrint(e.toString());
-      return null;
-    }
-  }
+  //     return checklist;
+  //   } catch (e) {
+  //     debugPrint(e.toString());
+  //     return null;
+  //   }
+  // }
 
   Future<void> loadChecklist(ChecklistModel checklist) async {
     state = ChecklistState(

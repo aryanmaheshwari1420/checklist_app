@@ -1,5 +1,6 @@
 import 'package:checklist_app/shared/models/template_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class TemplateRepository {
   TemplateRepository({
@@ -11,7 +12,6 @@ class TemplateRepository {
   CollectionReference<Map<String, dynamic>> get _templatesRef =>
       _firestore.collection('templates');
 
-  /// Real-time stream of all public templates.
   Stream<List<TemplateModel>> watchAllTemplates() {
     return _templatesRef
         .where('isPublic', isEqualTo: true)
@@ -44,15 +44,15 @@ class TemplateRepository {
     });
   }
 
-  Future<TemplateModel> getTemplateById(String templateId) async {
-    final doc = await _templatesRef.doc(templateId).get();
+  // Future<TemplateModel> getTemplateById(String templateId) async {
+  //   final doc = await _templatesRef.doc(templateId).get();
 
-    if (!doc.exists) {
-      throw Exception('Template not found');
-    }
+  //   if (!doc.exists) {
+  //     throw Exception('Template not found');
+  //   }
 
-    return TemplateModel.fromMap(doc.data()!);
-  }
+  //   return TemplateModel.fromMap(doc.data()!);
+  // }
 
   Future<String> createTemplate(TemplateModel template) async {
     final doc = _templatesRef.doc();
@@ -62,6 +62,8 @@ class TemplateRepository {
       'id': doc.id,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+    }).catchError((e){
+            debugPrint("Background sync failed for template ${doc.id}: $e");
     });
 
     return doc.id;
@@ -71,10 +73,14 @@ class TemplateRepository {
     await _templatesRef.doc(template.id).update({
       ...template.toMap(),
       'updatedAt': FieldValue.serverTimestamp(),
+    }).catchError((e){
+      debugPrint("Background sync failed for template ${template.id}: $e");
     });
   }
 
   Future<void> deleteTemplate(String templateId) async {
-    await _templatesRef.doc(templateId).delete();
+    await _templatesRef.doc(templateId).delete().catchError((e){
+      debugPrint("Background sync failed for template delete $templateId: $e");
+    });
   }
 }

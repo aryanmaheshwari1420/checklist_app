@@ -43,11 +43,18 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
 
     final checklist = ref.read(checklistControllerProvider);
 
-    if (checklist.type.isNotEmpty) {
+    // ---- Guard: dropdown value must exist in the items list, otherwise
+    // Flutter throws an assertion error when it can't find a matching item
+    // (e.g. checklist came from a template with a custom/unknown type). ----
+    if (checklist.type.isNotEmpty && categories.contains(checklist.type)) {
       selectedType = checklist.type;
+    } else {
+      selectedType = categories.first;
     }
 
-    selectedPriority = checklist.priority;
+    selectedPriority = checklist.priority.isNotEmpty
+        ? checklist.priority
+        : "Medium";
     reminder = checklist.reminderEnabled;
     reminderDate = checklist.reminderDateTime;
 
@@ -68,10 +75,10 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
       context: context,
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
-      initialDate: DateTime.now(),
+      initialDate: reminderDate ?? DateTime.now(),
     );
 
-    if (date != null) {
+    if (date != null && mounted) {
       setState(() {
         if (reminderTime != null) {
           reminderDate = DateTime(
@@ -91,10 +98,10 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
   Future<void> pickReminderTime() async {
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: reminderTime ?? TimeOfDay.now(),
     );
 
-    if (time != null) {
+    if (time != null && mounted) {
       setState(() {
         reminderTime = time;
 
@@ -152,6 +159,51 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
     }
   }
 
+  void _handleNext() {
+    // ---- Guard: if reminder is ON, both date and time must be selected ----
+    if (reminder && (reminderDate == null || reminderTime == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select both a reminder date and time."),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // ---- Guard: reminder date/time shouldn't be in the past ----
+    if (reminder &&
+        reminderDate != null &&
+        reminderDate!.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Reminder date/time can't be in the past."),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    ref
+        .read(checklistControllerProvider.notifier)
+        .updateDetails(
+          type: selectedType,
+          priority: selectedPriority,
+          reminderEnabled: reminder,
+          reminderDateTime: reminder ? reminderDate : null,
+          notes: notesController.text.trim(),
+        );
+
+    Navigator.pushNamed(
+      context,
+      AppRoutes.addCategories,
+      arguments: {
+        'mode': widget.mode,
+        'checklistId': widget.checklistId,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -194,7 +246,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
 
               InputDecorator(
                 decoration: const InputDecoration(
-                  isDense: true, 
+                  isDense: true,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 0,
@@ -205,8 +257,8 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                     value: selectedType,
                     isExpanded: true,
                     borderRadius: BorderRadius.circular(14),
-                    elevation: 3, 
-                    dropdownColor: colorScheme.surfaceContainerHigh, //
+                    elevation: 3,
+                    dropdownColor: colorScheme.surfaceContainerHigh,
                     style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurface,
                     ),
@@ -217,8 +269,9 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                       );
                     }).toList(),
                     onChanged: (value) {
+                      if (value == null) return;
                       setState(() {
-                        selectedType = value!;
+                        selectedType = value;
                       });
                     },
                   ),
@@ -249,6 +302,12 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                     onChanged: (value) {
                       setState(() {
                         reminder = value;
+                        // Clear stale date/time if reminder gets turned off,
+                        // so re-enabling doesn't silently reuse an old value.
+                        if (!value) {
+                          reminderDate = null;
+                          reminderTime = null;
+                        }
                       });
                     },
                   ),
@@ -257,7 +316,6 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
               if (reminder) ...[
                 const SizedBox(height: 20),
 
-                // ✅ Fixed
                 InkWell(
                   onTap: pickReminderDate,
                   borderRadius: BorderRadius.circular(14),
@@ -288,7 +346,6 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // ✅ Fixed
                 InkWell(
                   onTap: pickReminderTime,
                   borderRadius: BorderRadius.circular(14),
@@ -326,6 +383,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
               TextField(
                 controller: notesController,
                 maxLines: 5,
+                maxLength: 500,
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   hintText: "Add additional notes...",
@@ -345,26 +403,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
                   const SizedBox(width: 15),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        ref
-                            .read(checklistControllerProvider.notifier)
-                            .updateDetails(
-                              type: selectedType,
-                              priority: selectedPriority,
-                              reminderEnabled: reminder,
-                              reminderDateTime: reminderDate,
-                              notes: notesController.text.trim(),
-                            );
-
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.addCategories,
-                          arguments: {
-                            'mode': widget.mode,
-                            'checklistId': widget.checklistId,
-                          },
-                        );
-                      },
+                      onPressed: _handleNext,
                       child: const Text("Next"),
                     ),
                   ),

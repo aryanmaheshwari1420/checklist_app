@@ -29,6 +29,8 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
 
     if (widget.checklist != null) {
       Future.microtask(() {
+        if (!mounted) return;
+
         final currentState = ref.read(checklistControllerProvider);
 
         if (currentState.categories.isEmpty) {
@@ -43,44 +45,65 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   List<String> get categories =>
       ref.read(checklistControllerProvider).categories;
 
+  bool _isDuplicate(String value, {String? ignoreExisting}) {
+    return categories.any(
+      (c) =>
+          c.toLowerCase() == value.toLowerCase() &&
+          c.toLowerCase() != (ignoreExisting?.toLowerCase() ?? ''),
+    );
+  }
+
   // -------------------- ADD CATEGORY --------------------
 
   void addCategoryDialog() {
     final TextEditingController controller = TextEditingController();
+    final formKey = GlobalKey<FormState>();
 
     showBlurDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Add Category"),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(hintText: "e.g., Groceries"),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: controller,
+              autofocus: true,
+              maxLength: 30,
+              decoration: const InputDecoration(hintText: "e.g., Groceries"),
+              validator: (value) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) return "Category name can't be empty";
+                if (_isDuplicate(trimmed)) {
+                  return "This category already exists";
+                }
+                return null;
+              },
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () async {
-                FocusScope.of(context).unfocus();
+                FocusScope.of(dialogContext).unfocus();
                 await Future.delayed(const Duration(milliseconds: 100));
-                if (context.mounted) Navigator.pop(context);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
               },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+
                 final value = controller.text.trim();
 
-                FocusScope.of(context).unfocus();
+                FocusScope.of(dialogContext).unfocus();
                 await Future.delayed(const Duration(milliseconds: 100));
 
-                if (value.isNotEmpty) {
-                  ref
-                      .read(checklistControllerProvider.notifier)
-                      .addCategory(value);
-                }
+                ref
+                    .read(checklistControllerProvider.notifier)
+                    .addCategory(value);
 
-                if (context.mounted) Navigator.pop(context);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
               },
               child: const Text("Save"),
             ),
@@ -93,46 +116,62 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   // -------------------- EDIT CATEGORY --------------------
 
   void editCategory(int index) {
-    final TextEditingController controller = TextEditingController(
-      text: categories[index],
-    );
+    // ---- Guard: index out of range (list could've changed) ----
+    if (index < 0 || index >= categories.length) return;
+
+    final originalName = categories[index];
+    final TextEditingController controller =
+        TextEditingController(text: originalName);
+    final formKey = GlobalKey<FormState>();
 
     showBlurDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Edit Category"),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(hintText: "e.g., Work"),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: controller,
+              autofocus: true,
+              maxLength: 30,
+              decoration: const InputDecoration(hintText: "e.g., Work"),
+              validator: (value) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) return "Category name can't be empty";
+                if (_isDuplicate(trimmed, ignoreExisting: originalName)) {
+                  return "This category already exists";
+                }
+                return null;
+              },
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () async {
-                FocusScope.of(context).unfocus();
+                FocusScope.of(dialogContext).unfocus();
                 await Future.delayed(const Duration(milliseconds: 100));
-                if (context.mounted) Navigator.pop(context);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
               },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+
                 final value = controller.text.trim();
 
-                FocusScope.of(context).unfocus();
+                FocusScope.of(dialogContext).unfocus();
                 await Future.delayed(const Duration(milliseconds: 100));
 
-                if (value.isNotEmpty) {
+                // ---- Guard: category might've been deleted while dialog was open ----
+                if (categories.contains(originalName)) {
                   ref
                       .read(checklistControllerProvider.notifier)
-                      .updateCategory(
-                        oldName: categories[index],
-                        newName: value,
-                      );
+                      .updateCategory(oldName: originalName, newName: value);
                 }
 
-                if (context.mounted) Navigator.pop(context);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
               },
               child: const Text("Update"),
             ),
@@ -145,15 +184,22 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   // -------------------- DELETE CATEGORY --------------------
 
   void deleteCategory(int index) {
+    // ---- Guard: index out of range ----
+    if (index < 0 || index >= categories.length) return;
+
+    final categoryName = categories[index];
+
     showBlurDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Delete Category"),
-          content: Text("Delete '${categories[index]}'?"),
+          content: Text(
+            "Delete '$categoryName'? All items inside it will be removed too.",
+          ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
@@ -161,13 +207,14 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
               onPressed: () {
-                setState(() {
+                // ---- Guard: category might've already been removed ----
+                if (categories.contains(categoryName)) {
                   ref
                       .read(checklistControllerProvider.notifier)
-                      .removeCategory(categories[index]);
-                });
+                      .removeCategory(categoryName);
+                }
 
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
               child: const Text("Delete"),
             ),
@@ -184,7 +231,6 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -217,7 +263,6 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 52,
-                // This button is now styled by the theme's `outlinedButtonTheme`
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.add),
                   label: const Text("Add Category"),
@@ -230,7 +275,6 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               Row(
                 children: [
                   Expanded(
-                    // This button is now styled by the theme's `outlinedButtonTheme`
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -240,11 +284,27 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                   ),
                   const SizedBox(width: 15),
                   Expanded(
-                    // This button is now styled by the theme's `elevatedButtonTheme`
                     child: ElevatedButton(
                       onPressed: categories.isEmpty
                           ? null
                           : () {
+                              // ---- Guard: create mode requires no checklistId,
+                              // edit mode requires one. Only block edit mode
+                              // if it's unexpectedly missing. ----
+                              if (widget.mode == ChecklistMode.edit &&
+                                  (widget.checklistId == null ||
+                                      widget.checklistId!.isEmpty)) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Something went wrong — checklist ID is missing.",
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+
                               Navigator.pushNamed(
                                 context,
                                 AppRoutes.addItems,
@@ -303,43 +363,40 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-  child: Row(
-    children: [
-      Expanded(
-        child: Text(
-          categories[index],
-          style: textTheme.titleMedium,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-
-      InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => editCategory(index),
-        child: const Padding(
-          padding: EdgeInsets.all(4),
-          child: Icon(Icons.edit_outlined, size: 22),
-        ),
-      ),
-
-      const SizedBox(width: 8),
-
-      InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => deleteCategory(index),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Icon(
-            Icons.delete_outline,
-            size: 22,
-            color: colorScheme.error,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    categories[index],
+                    style: textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => editCategory(index),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.edit_outlined, size: 22),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => deleteCategory(index),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.delete_outline,
+                      size: 22,
+                      color: colorScheme.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-    ],
-  ),
-),
         );
       },
     );

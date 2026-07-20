@@ -11,11 +11,11 @@ class DashboardController extends Notifier<void> {
   @override
   void build() {}
 
-  Future<List<ChecklistModel>> getUserChecklists() async {
+  Stream<List<ChecklistModel>> watchUserChecklists()  {
     final repository = ref.read(
       dashboardRepositoryProvider,
     );
 
-    return repository.getUserChecklists();
+    return repository.watchUserChecklists();
   }
 }
