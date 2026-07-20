@@ -10,7 +10,6 @@ import 'package:checklist_app/features/dashboard/presentation/widgets/overall_pr
 import 'package:checklist_app/features/dashboard/presentation/widgets/quick_actions_section.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/recent_checklist_card.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/summary_card.dart';
-import 'package:checklist_app/shared/utils/offline_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -161,164 +160,157 @@ class DashboardScreen extends ConsumerWidget {
           ),
 
           body: SafeArea(
-            child: Column(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
               children: [
-                const OfflineBanner(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      GreetingSection(
-                        name: user?.firstName ?? "User",
-                        hasChecklist: hasChecklist,
-                      ),
-                  
-                      const SizedBox(height: 25),
-                  
-                      Row(
-                        children: [
-                          SummaryCard(
-                            title: "Total",
-                            value: total,
-                            icon: Icons.assignment_outlined,
-                            iconColor: colorScheme.primary,
-                            illustrationAsset: 'assets/images/completed.png',
-                          ),
-                          const SizedBox(width: 8),
-                          SummaryCard(
-                            title: "Completed",
-                            value: completed,
-                            icon: Icons.check_circle_outline,
-                            iconColor: colorScheme.tertiary,
-                            illustrationAsset: 'assets/images/line_chart.png',
-                          ),
-                          const SizedBox(width: 8),
-                          SummaryCard(
-                            title: "Pending",
-                            value: pending,
-                            icon: Icons.access_time,
-                            iconColor: Colors.orange,
-                            illustrationAsset: 'assets/images/bar_chart.png',
-                          ),
-                          const SizedBox(width: 8),
-                          SummaryCard(
-                            title: "Overdue",
-                            value: overdue,
-                            icon: Icons.calendar_today_outlined,
-                            iconColor: colorScheme.error,
-                            illustrationAsset: 'assets/images/warning_icon.png',
-                          ),
-                        ],
-                      ),
-                  
-                      const SizedBox(height: 30),
-                  
-                      OverallProgressCard(
-                        progress: overallProgress,
-                        completed: checkedItems,
-                        total: totalItems,
-                      ),
-                  
-                      const SizedBox(height: 28),
-                  
-                      const QuickActionsSection(),
-                  
-                      const SizedBox(height: 28),
-                  
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Active Checklists", style: textTheme.titleLarge),
-                          // Only show "View All" when there's actually more to see.
-                          if (hasMoreChecklists)
-                            InkWell(
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.viewAllChecklist,
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 4,
-                                ),
-                                child: Text(
-                                  "View All",
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                  
-                      const SizedBox(height: 18),
-                  
-                      if (checklists.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 50),
-                          child: Center(child: Text("No checklists created yet.")),
-                        )
-                      else
-                        ...previewChecklists.map((checklist) {
-                          int totalItems = 0;
-                          int completedItems = 0;
-                  
-                          for (final items in checklist.items.values) {
-                            totalItems += items.length;
-                            completedItems += items.where((e) => e.checked).length;
-                          }
-                  
-                          String status;
-                  
-                          if (completedItems == totalItems && totalItems > 0) {
-                            status = "Completed";
-                          } else if (completedItems == 0) {
-                            status = "Pending";
-                          } else {
-                            status = "In Progress";
-                          }
-                  
-                          return RecentChecklistCard(
-                            title: checklist.title,
-                            completed: completedItems,
-                            total: totalItems,
-                            status: status,
-                            imagePath: _imageForType(checklist.type),
-                            dueDate: checklist.dueDate,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.viewChecklist,
-                                arguments: {
-                                  'checklistId': checklist.id,
-                                  'camefromViewAll': false,
-                                }
-                              );
-                            },
-                            onDelete: () async {
-                              await ref
-                                  .read(checklistControllerProvider.notifier)
-                                  .deleteChecklist(checklist.id);
-                  
-                              ref.invalidate(dashboardProvider);
-                  
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Checklist deleted successfully."),
-                                  ),
-                                );
-                              }
-                            },
-                          );
-                        }),
-                    ],
-                  ),
+                GreetingSection(
+                  name: user?.firstName ?? "User",
+                  hasChecklist: hasChecklist,
                 ),
+            
+                const SizedBox(height: 25),
+            
+                Row(
+                  children: [
+                    SummaryCard(
+                      title: "Total",
+                      value: total,
+                      icon: Icons.assignment_outlined,
+                      iconColor: colorScheme.primary,
+                      illustrationAsset: 'assets/images/completed.png',
+                    ),
+                    const SizedBox(width: 8),
+                    SummaryCard(
+                      title: "Completed",
+                      value: completed,
+                      icon: Icons.check_circle_outline,
+                      iconColor: colorScheme.tertiary,
+                      illustrationAsset: 'assets/images/line_chart.png',
+                    ),
+                    const SizedBox(width: 8),
+                    SummaryCard(
+                      title: "Pending",
+                      value: pending,
+                      icon: Icons.access_time,
+                      iconColor: Colors.orange,
+                      illustrationAsset: 'assets/images/bar_chart.png',
+                    ),
+                    const SizedBox(width: 8),
+                    SummaryCard(
+                      title: "Overdue",
+                      value: overdue,
+                      icon: Icons.calendar_today_outlined,
+                      iconColor: colorScheme.error,
+                      illustrationAsset: 'assets/images/warning_icon.png',
+                    ),
+                  ],
+                ),
+            
+                const SizedBox(height: 30),
+            
+                OverallProgressCard(
+                  progress: overallProgress,
+                  completed: checkedItems,
+                  total: totalItems,
+                ),
+            
+                const SizedBox(height: 28),
+            
+                const QuickActionsSection(),
+            
+                const SizedBox(height: 28),
+            
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Active Checklists", style: textTheme.titleLarge),
+                    // Only show "View All" when there's actually more to see.
+                    if (hasMoreChecklists)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.viewAllChecklist,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            "View All",
+                            style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+            
+                const SizedBox(height: 18),
+            
+                if (checklists.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 50),
+                    child: Center(child: Text("No checklists created yet.")),
+                  )
+                else
+                  ...previewChecklists.map((checklist) {
+                    int totalItems = 0;
+                    int completedItems = 0;
+            
+                    for (final items in checklist.items.values) {
+                      totalItems += items.length;
+                      completedItems += items.where((e) => e.checked).length;
+                    }
+            
+                    String status;
+            
+                    if (completedItems == totalItems && totalItems > 0) {
+                      status = "Completed";
+                    } else if (completedItems == 0) {
+                      status = "Pending";
+                    } else {
+                      status = "In Progress";
+                    }
+            
+                    return RecentChecklistCard(
+                      title: checklist.title,
+                      completed: completedItems,
+                      total: totalItems,
+                      status: status,
+                      imagePath: _imageForType(checklist.type),
+                      dueDate: checklist.dueDate,
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.viewChecklist,
+                          arguments: {
+                            'checklistId': checklist.id,
+                            'camefromViewAll': false,
+                          }
+                        );
+                      },
+                      onDelete: () async {
+                        await ref
+                            .read(checklistControllerProvider.notifier)
+                            .deleteChecklist(checklist.id);
+            
+                        ref.invalidate(dashboardProvider);
+            
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Checklist deleted successfully."),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  }),
               ],
             ),
           ),
