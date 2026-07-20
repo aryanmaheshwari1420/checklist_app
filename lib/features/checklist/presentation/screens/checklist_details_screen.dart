@@ -383,7 +383,6 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
               TextField(
                 controller: notesController,
                 maxLines: 5,
-                maxLength: 500,
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   hintText: "Add additional notes...",

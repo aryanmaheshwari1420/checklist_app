@@ -347,7 +347,6 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   controller: descriptionController,
                   focusNode: descriptionFocusNode,
                   maxLines: 4,
-                  maxLength: 200,
                   textInputAction: TextInputAction.done,
                   onEditingComplete: () => FocusScope.of(context).unfocus(),
                   decoration: InputDecoration(
