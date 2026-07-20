@@ -100,6 +100,10 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
+    final hintStyle = textTheme.bodyMedium?.copyWith(
+    color: colorScheme.onSurface.withOpacity(0.28),
+  );
+
     return Scaffold(
       // The Scaffold and AppBar are now styled by the global theme
       appBar: AppBar(
@@ -247,11 +251,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
                   decoration: InputDecoration(
                     hintText: "Bali Trip",
-                    hintStyle: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.28), // Fade effect
-                    ),
+                    hintStyle: hintStyle,
 
                     suffixIcon: ValueListenableBuilder<TextEditingValue>(
                       valueListenable: nameController,
@@ -294,11 +294,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                   onEditingComplete: () => FocusScope.of(context).unfocus(),
                   decoration: InputDecoration(
                     hintText: "Checklist for our Bali trip preparation.",
-                    hintStyle: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.28), // Fade effect
-                    ),
+                    hintStyle: hintStyle,
                   ),
                 ),
 
@@ -318,13 +314,9 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                         Expanded(
                           child: Text(
                             formattedDate,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: selectedDate == null
-                                  ? colorScheme.onSurfaceVariant.withOpacity(
-                                      0.28,
-                                    )
-                                  : colorScheme.onSurface.withOpacity(0.28),
-                            ),
+                            style: selectedDate == null
+        ? hintStyle
+        : textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
                           ),
                         ),
                         Icon(
