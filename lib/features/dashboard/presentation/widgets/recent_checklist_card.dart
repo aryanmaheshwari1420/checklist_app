@@ -214,6 +214,13 @@ class RecentChecklistCard extends StatelessWidget {
                           size: 20,
                           color: colorScheme.onSurfaceVariant,
                         ),
+                        elevation: 4,
+                        shadowColor: Colors.black26,
+                        color: colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        offset: const Offset(0,40),
                         onSelected: (value) {
                           if (value == "delete") {
                             _confirmDelete(context);

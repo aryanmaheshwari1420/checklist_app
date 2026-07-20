@@ -254,6 +254,13 @@ class _ChecklistOverviewScreenState
                       showDeleteDialog(ref, context);
                     }
                   },
+                  elevation: 4,
+                        shadowColor: Colors.black26,
+                        color: colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        offset: const Offset(0,40),
                   itemBuilder: (_) => [
                     PopupMenuItem(
                       value: "delete",

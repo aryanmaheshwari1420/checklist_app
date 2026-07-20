@@ -101,8 +101,8 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     final hintStyle = textTheme.bodyMedium?.copyWith(
-    color: colorScheme.onSurface.withOpacity(0.28),
-  );
+      color: colorScheme.onSurface.withOpacity(0.28),
+    );
 
     return Scaffold(
       // The Scaffold and AppBar are now styled by the global theme
@@ -315,8 +315,10 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
                           child: Text(
                             formattedDate,
                             style: selectedDate == null
-        ? hintStyle
-        : textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+                                ? hintStyle
+                                : textTheme.bodyLarge?.copyWith(
+                                    color: colorScheme.onSurface,
+                                  ),
                           ),
                         ),
                         Icon(

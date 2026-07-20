@@ -29,7 +29,7 @@ class OverallProgressCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              colorScheme.primaryContainer.withOpacity(0.35),
+              colorScheme.primaryContainer.withOpacity(0.8),
               colorScheme.surface,
             ],
           ),
