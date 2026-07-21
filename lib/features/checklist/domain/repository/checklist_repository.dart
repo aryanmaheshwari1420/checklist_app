@@ -103,22 +103,50 @@ class ChecklistRepository {
   Future<void> deleteChecklist(String checklistId) async {
     final uid = _auth.currentUser!.uid;
 
-    _deleteAllItems(uid, checklistId).then((_) {
-      _checklistsRef(uid).doc(checklistId).delete().catchError((e) {
-        debugPrint("Background sync failed for checklist delete $checklistId: $e");
-      });
-    });
+    // Delete the checklist doc immediately — fire-and-forget, offline-safe,
+  // exactly like create/update. This resolves instantly regardless of
+  // network state, so the UI never hangs waiting on it.
+  _checklistsRef(uid).doc(checklistId).delete().catchError((e) {
+    debugPrint("Background sync failed for checklist delete $checklistId: $e");
+  });
+
+  // Clean up the items subcollection in the background — not awaited by
+  // the caller, so a slow/offline items query never blocks deletion of
+  // the checklist itself.
+  _deleteAllItems(uid, checklistId);
   }
 
   Future<void> _deleteAllItems(String uid, String checklistId) async {
-    final snapshot = await _itemsRef(uid, checklistId).get();
+  try {
+    // Try cache first — if this checklist's items were ever loaded via
+    // watchItems()'s .snapshots(), they're already cached locally and this
+    // resolves instantly even fully offline. A server-sourced get() here
+    // is what was hanging: with zero connectivity it can block for a long
+    // time before failing, which is why deletion felt inconsistent.
+    QuerySnapshot<Map<String, dynamic>> snapshot;
+    try {
+      snapshot = await _itemsRef(uid, checklistId)
+          .get(const GetOptions(source: Source.cache));
+    } catch (_) {
+      // No cached data (e.g. this checklist's items screen was never
+      // opened) — fall back to a normal get(), which is fine when online
+      // and simply won't find anything useful to delete when offline.
+      snapshot = await _itemsRef(uid, checklistId).get();
+    }
+
     if (snapshot.docs.isEmpty) return;
 
     final batch = _firestore.batch();
     for (final doc in snapshot.docs) {
       batch.delete(doc.reference);
     }
-    await batch.commit();
+
+    batch.commit().catchError((e) {
+      debugPrint("Background sync failed deleting items for $checklistId: $e");
+    });
+  } catch (e) {
+    debugPrint("Failed to fetch items for deletion of $checklistId: $e");
+  }
   }
 
   Stream<ChecklistModel> watchChecklistById(String checklistId) {
