@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChecklistItemModel {
   final String id;
-  final String category;
+  final String categoryId;
   final String title;
   final bool checked;
   final int order;
@@ -11,7 +11,7 @@ class ChecklistItemModel {
 
   const ChecklistItemModel({
     required this.id,
-    required this.category,
+    required this.categoryId,
     required this.title,
     this.checked = false,
     this.order = 0,
@@ -21,7 +21,7 @@ class ChecklistItemModel {
 
   ChecklistItemModel copyWith({
     String? id,
-    String? category,
+    String? categoryId,
     String? title,
     bool? checked,
     int? order,
@@ -30,7 +30,7 @@ class ChecklistItemModel {
   }) {
     return ChecklistItemModel(
       id: id ?? this.id,
-      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       title: title ?? this.title,
       checked: checked ?? this.checked,
       order: order ?? this.order,
@@ -42,7 +42,7 @@ class ChecklistItemModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'category': category,
+      'categoryId': categoryId,
       'title': title,
       'checked': checked,
       'order': order,
@@ -52,7 +52,7 @@ class ChecklistItemModel {
   factory ChecklistItemModel.fromMap(String id, Map<String, dynamic> map) {
     return ChecklistItemModel(
       id: id,
-      category: map['category'] ?? '',
+      categoryId: map['categoryId'] ?? '',
       title: map['title'] ?? '',
       checked: map['checked'] ?? false,
       order: map['order'] ?? 0,

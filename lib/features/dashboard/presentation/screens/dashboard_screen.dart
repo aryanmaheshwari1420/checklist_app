@@ -62,31 +62,25 @@ class DashboardScreen extends ConsumerWidget {
         final user = currentUserAsync.value;
         final total = checklists.length;
 
-        int completed = 0;
+         int completed = 0;
         int pending = 0;
         int totalItems = 0;
         int checkedItems = 0;
         int overdue = 0;
 
         final today = DateTime.now();
-        final todayOnly = DateTime(today.year,today.month,today.day);
+        final todayOnly = DateTime(today.year, today.month, today.day);
 
-        // Calculate
-
+        // ---- Now reads aggregate counters directly from the checklist
+        // metadata document — no per-checklist items subcollection fetch
+        // needed here, since totalItems/completedItems are maintained
+        // atomically by the repository. ----
         for (final checklist in checklists) {
-          int checklistTotal = 0;
-          int checklistCompleted = 0;
+          totalItems += checklist.totalItems;
+          checkedItems += checklist.completedItems;
 
-          for (final items in checklist.items.values) {
-            checklistTotal += items.length;
-            checklistCompleted += items.where((e) => e.checked).length;
-          }
-
-          totalItems += checklistTotal;
-          checkedItems += checklistCompleted;
-
-          final isCompleted =  checklistTotal > 0 && checklistCompleted == checklistTotal;
-
+          final isCompleted = checklist.totalItems > 0 &&
+              checklist.completedItems == checklist.totalItems;
 
           if (isCompleted) {
             completed++;
@@ -94,28 +88,27 @@ class DashboardScreen extends ConsumerWidget {
             pending++;
           }
 
-          if(!isCompleted && checklist.dueDate!=null){
-            final dueDateOnly =  DateTime(
+          if (!isCompleted && checklist.dueDate != null) {
+            final dueDateOnly = DateTime(
               checklist.dueDate!.year,
               checklist.dueDate!.month,
-              checklist.dueDate!.day
+              checklist.dueDate!.day,
             );
-            if(dueDateOnly.isBefore(todayOnly)){
-            overdue++;
-          }
+            if (dueDateOnly.isBefore(todayOnly)) {
+              overdue++;
+            }
           }
         }
 
-        final overallProgress = totalItems == 0
-            ? 0.0
-            : checkedItems / totalItems;
+        final overallProgress =
+            totalItems == 0 ? 0.0 : checkedItems / totalItems;
 
         // Only preview the first N checklists on the dashboard itself.
-        final previewChecklists = checklists
-            .take(_dashboardChecklistPreviewCount)
-            .toList();
+        final previewChecklists =
+            checklists.take(_dashboardChecklistPreviewCount).toList();
         final hasMoreChecklists =
             checklists.length > _dashboardChecklistPreviewCount;
+
 
         return Scaffold(
           // The background color and AppBar style are now handled by the theme
@@ -259,28 +252,25 @@ class DashboardScreen extends ConsumerWidget {
                   )
                 else
                   ...previewChecklists.map((checklist) {
-                    int totalItems = 0;
-                    int completedItems = 0;
-            
-                    for (final items in checklist.items.values) {
-                      totalItems += items.length;
-                      completedItems += items.where((e) => e.checked).length;
-                    }
-            
+
+                    final checklistTotal = checklist.totalItems;
+                    final checklistCompleted = checklist.completedItems;
+
                     String status;
             
-                    if (completedItems == totalItems && totalItems > 0) {
-                      status = "Completed";
-                    } else if (completedItems == 0) {
-                      status = "Pending";
-                    } else {
-                      status = "In Progress";
-                    }
+                    if (checklistCompleted == checklistTotal &&
+                              checklistTotal > 0) {
+                            status = "Completed";
+                          } else if (checklistCompleted == 0) {
+                            status = "Pending";
+                          } else {
+                            status = "In Progress";
+                          }
             
                     return RecentChecklistCard(
                       title: checklist.title,
-                      completed: completedItems,
-                      total: totalItems,
+                      completed: checklistCompleted,
+                      total: checklistTotal,
                       status: status,
                       imagePath: _imageForType(checklist.type),
                       dueDate: checklist.dueDate,

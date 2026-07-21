@@ -53,13 +53,9 @@ class AllChecklistsScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final checklist = checklists[index];
 
-              int totalItems = 0;
-              int completedItems = 0;
+              final totalItems = checklist.totalItems;
+              final completedItems = checklist.completedItems;
 
-              for (final items in checklist.items.values) {
-                totalItems += items.length;
-                completedItems += items.where((e) => e.checked).length;
-              }
 
               String status;
               if (completedItems == totalItems && totalItems > 0) {

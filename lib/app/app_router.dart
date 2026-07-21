@@ -51,12 +51,12 @@ class AppRouter {
           ),
         );
 
-      case AppRoutes.templateDetails:
-        final args = settings.arguments as Map<String, dynamic>;
-        return MaterialPageRoute(
-          builder: (_) =>
-              TemplateOverviewScreen(templateId: args['templateId'] as String),
-        );
+      // case AppRoutes.templateDetails:
+      //   final args = settings.arguments as Map<String, dynamic>;
+      //   return MaterialPageRoute(
+      //     builder: (_) =>
+      //         TemplateOverviewScreen(templateId: args['templateId'] as String),
+      //   );
 
       case AppRoutes.checklistDetails:
         final args = settings.arguments as Map<String, dynamic>?;

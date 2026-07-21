@@ -20,16 +20,11 @@ class ChecklistHeader extends StatelessWidget {
   }
 
   double calculateChecklistProgress(ChecklistModel checklist) {
-    int total = 0;
-    int completed = 0;
+     final totalItems = checklist.totalItems;
+  final checkedItems = checklist.completedItems;
 
-    for (final items in checklist.items.values) {
-      total += items.length;
+    return totalItems == 0 ? 0.0 : checkedItems / totalItems;
 
-      completed += items.where((item) => item.checked).length;
-    }
-
-    return total == 0 ? 0.0 : completed / total;
   }
 
   @override

@@ -1,9 +1,10 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
+import 'package:checklist_app/features/checklist/presentation/providers/checklist_items_provider.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:checklist_app/shared/models/ChecklistItemModel%20.dart';
 import 'package:checklist_app/shared/utils/dialog_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,34 +26,6 @@ class ChecklistOverviewScreen extends ConsumerStatefulWidget {
 
 class _ChecklistOverviewScreenState
     extends ConsumerState<ChecklistOverviewScreen> {
-  double calculateChecklistProgress(ChecklistModel checklist) {
-    int total = 0;
-    int completed = 0;
-
-    for (final items in checklist.items.values) {
-      total += items.length;
-      completed += items.where((item) => item.checked).length;
-    }
-
-    return total == 0 ? 0.0 : completed / total;
-  }
-
-  int _totalItems(ChecklistModel checklist) {
-    int total = 0;
-    for (final items in checklist.items.values) {
-      total += items.length;
-    }
-    return total;
-  }
-
-  int _completedItems(ChecklistModel checklist) {
-    int completed = 0;
-    for (final items in checklist.items.values) {
-      completed += items.where((item) => item.checked).length;
-    }
-    return completed;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -61,42 +34,47 @@ class _ChecklistOverviewScreenState
     });
   }
 
-  void editItemDialog(ChecklistModel checklist, String category, int index) {
-    final items = checklist.items[category] ?? [];
-    final oldItem = items[index];
-    final controller = TextEditingController(text: oldItem.title);
+  void editItemDialog(ChecklistItemModel item) {
+    final controller = TextEditingController(text: item.title);
+    final formKey = GlobalKey<FormState>();
 
     showBlurDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Edit Item"),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: "Enter item name"),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 60,
+            decoration: const InputDecoration(hintText: "Enter item name"),
+            validator: (value) {
+              final trimmed = value?.trim() ?? '';
+              if (trimmed.isEmpty) return "Item name can't be empty";
+              return null;
+            },
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text("Cancel"),
           ),
           ElevatedButton(
             onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+
               final value = controller.text.trim();
-              if (value.isNotEmpty) {
-                final notifier = ref.read(checklistControllerProvider.notifier);
+              final notifier = ref.read(checklistControllerProvider.notifier);
 
-                await notifier.loadChecklist(checklist);
-                notifier.updateItem(
-                  category: category,
-                  oldItem: oldItem,
-                  newItem: oldItem.copyWith(title: value),
-                );
-                await notifier.updateChecklist();
+              await notifier.updateItemTitle(
+                checklistId: widget.checklistId,
+                itemId: item.id,
+                title: value,
+              );
 
-                ref.invalidate(checklistByIdProvider(widget.checklistId));
-              }
-              if (context.mounted) Navigator.pop(context);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             child: const Text("Update"),
           ),
@@ -105,18 +83,15 @@ class _ChecklistOverviewScreenState
     );
   }
 
-  void deleteItemDialog(ChecklistModel checklist, String category, int index) {
-    final items = checklist.items[category] ?? [];
-    final item = items[index];
-
+  void deleteItemDialog(ChecklistItemModel item) {
     showBlurDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Delete Item"),
         content: const Text("Are you sure you want to delete this item?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text("Cancel"),
           ),
           ElevatedButton(
@@ -126,12 +101,13 @@ class _ChecklistOverviewScreenState
             onPressed: () async {
               final notifier = ref.read(checklistControllerProvider.notifier);
 
-              await notifier.loadChecklist(checklist);
-              notifier.removeItem(category: category, item: item);
-              await notifier.updateChecklist();
+              await notifier.deleteItemFromChecklist(
+                checklistId: widget.checklistId,
+                itemId: item.id,
+                wasChecked: item.checked,
+              );
 
-              ref.invalidate(checklistByIdProvider(widget.checklistId));
-              if (context.mounted) Navigator.pop(context);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             child: const Text("Delete"),
           ),
@@ -183,6 +159,7 @@ class _ChecklistOverviewScreenState
   @override
   Widget build(BuildContext context) {
     final checklistAsync = ref.watch(checklistByIdProvider(widget.checklistId));
+    final itemsAsync = ref.watch(checklistItemsProvider(widget.checklistId));
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -199,352 +176,366 @@ class _ChecklistOverviewScreenState
         ),
       ),
       data: (checklist) {
-        // if (checklist == null) {
-        //   return const Scaffold(
-        //     body: Center(child: Text("Checklist not found.")),
-        //   );
-        // }
+        return itemsAsync.when(
+          loading: () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          error: (error, _) =>
+              Scaffold(body: Center(child: Text(error.toString()))),
+          data: (items) {
+            // ---- Use aggregate counters for the top summary (cheap),
+            // but the live items list still drives the actual checklist
+            // UI below, so checkbox taps feel instant. ----
+            final total = checklist.totalItems;
+            final completed = checklist.completedItems;
+            final progress = total == 0 ? 0.0 : completed / total;
 
-        final total = _totalItems(checklist);
-        final completed = _completedItems(checklist);
-        final progress = calculateChecklistProgress(checklist);
-
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) {
-            if (didPop) return;
-
-            ref.invalidate(dashboardProvider);
-            ref.invalidate(checklistByIdProvider(widget.checklistId));
-            ref.invalidate(checklistControllerProvider);
-
-            if (widget.camefromViewAll) {
-              Navigator.pop(context);
-            } else {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.dashboard,
-                (route) => false,
-              );
+            // Group items by categoryId for rendering.
+            final itemsByCategoryId = <String, List<ChecklistItemModel>>{};
+            for (final item in items) {
+              itemsByCategoryId.putIfAbsent(item.categoryId, () => []).add(item);
             }
-          },
-          child: Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Text(checklist.title),
-              actions: [
-                IconButton(
+
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) {
+                if (didPop) return;
+
+                ref.invalidate(dashboardProvider);
+                ref.invalidate(checklistByIdProvider(widget.checklistId));
+                ref.invalidate(checklistItemsProvider(widget.checklistId));
+                ref.invalidate(checklistControllerProvider);
+
+                if (widget.camefromViewAll) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.dashboard,
+                    (route) => false,
+                  );
+                }
+              },
+              child: Scaffold(
+                appBar: AppBar(
+                  centerTitle: true,
+                  title: Text(checklist.title),
+                  actions: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.createChecklist,
+                          arguments: {
+                            "mode": ChecklistMode.edit,
+                            "showSkip": false,
+                            "checklistId": widget.checklistId,
+                            "checklist": checklist,
+                          },
+                        );
+                      },
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == "delete") {
+                          showDeleteDialog(ref, context);
+                        }
+                      },
+                      elevation: 4,
+                      shadowColor: Colors.black26,
+                      color: colorScheme.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      offset: const Offset(0, 40),
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: "delete",
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.delete_outline, color: colorScheme.error),
+                              const SizedBox(width: 10),
+                              Text(
+                                "Delete Checklist",
+                                style: TextStyle(color: colorScheme.error),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                floatingActionButton: FloatingActionButton.extended(
                   onPressed: () {
                     Navigator.pushNamed(
                       context,
-                      AppRoutes.createChecklist,
+                      AppRoutes.addCategories,
                       arguments: {
                         "mode": ChecklistMode.edit,
-                        "showSkip": false,
                         "checklistId": widget.checklistId,
                         "checklist": checklist,
                       },
                     );
                   },
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add Category/Item"),
                 ),
-                PopupMenuButton<String>(
-                  onSelected: (value) {
-                    if (value == "delete") {
-                      showDeleteDialog(ref, context);
-                    }
-                  },
-                  elevation: 4,
-                        shadowColor: Colors.black26,
-                        color: colorScheme.surface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        offset: const Offset(0,40),
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: "delete",
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.delete_outline, color: colorScheme.error),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Delete Checklist",
-                            style: TextStyle(color: colorScheme.error),
+
+                body: SafeArea(
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: SizedBox(
+                          height: 160,
+                          width: double.infinity,
+                          child: Image.asset(
+                            _imageForType(checklist.type),
+                            fit: BoxFit.fitWidth,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: colorScheme.primaryContainer,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  _iconForType(checklist.type),
+                                  size: 56,
+                                  color: colorScheme.primary,
+                                ),
+                              );
+                            },
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
 
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.addCategories,
-                  arguments: {
-                    "mode": ChecklistMode.edit,
-                    "checklistId": widget.checklistId,
-                    "checklist": checklist,
-                  },
-                );
-              },
-              icon: const Icon(Icons.add),
-              label: const Text("Add Category/Item"),
-            ),
+                      const SizedBox(height: 20),
 
-            body: SafeArea(
-              child: ListView(
-                padding: EdgeInsets.zero, // no padding at ListView level
-                children: [
-                  // ---- Full-bleed image (no horizontal padding) ----
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: SizedBox(
-                      height: 160,
-                      width: double.infinity,
-                      child: Image.asset(
-                        _imageForType(checklist.type),
-                        fit: BoxFit.fitWidth,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: colorScheme.primaryContainer,
-                            alignment: Alignment.center,
-                            child: Icon(
-                              _iconForType(checklist.type),
-                              size: 56,
-                              color: colorScheme.primary,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-              
-                  const SizedBox(height: 20),
-              
-                  // ---- Everything below gets its own horizontal padding ----
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ---- Title + progress % ----
-                        Row(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    checklist.title,
+                                    style: textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  "${(progress * 100).round()}%",
+                                  style: textTheme.titleMedium?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                minHeight: 6,
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Text(
+                              "$completed of $total completed",
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            _infoRow(
+                              context,
+                              label: "Due Date",
+                              value: checklist.dueDate != null
+                                  ? "${checklist.dueDate!.day} ${_monthName(checklist.dueDate!.month)} ${checklist.dueDate!.year}"
+                                  : "No due date",
+                            ),
+                            const SizedBox(height: 12),
+                            _infoRow(
+                              context,
+                              label: "Priority",
+                              value: checklist.priority,
+                              valueColor: _priorityColor(
+                                checklist.priority,
+                                colorScheme,
+                              ),
+                              showDot: true,
+                            ),
+                            const SizedBox(height: 12),
+                            _infoRow(
+                              context,
+                              label: "Type",
+                              value: checklist.type,
+                              valueColor: colorScheme.primary,
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            Text("Description", style: textTheme.labelLarge),
+                            const SizedBox(height: 6),
+                            Text(
+                              checklist.description.isNotEmpty
+                                  ? checklist.description
+                                  : "No description added.",
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
                               child: Text(
-                                checklist.title,
-                                style: textTheme.headlineSmall?.copyWith(
+                                "Checklist ($total)",
+                                style: textTheme.titleSmall?.copyWith(
+                                  color: colorScheme.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            Text(
-                              "${(progress * 100).round()}%",
-                              style: textTheme.titleMedium?.copyWith(
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-              
-                        const SizedBox(height: 10),
-              
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 6,
-                          ),
-                        ),
-              
-                        const SizedBox(height: 8),
-              
-                        Text(
-                          "$completed of $total completed",
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-              
-                        const SizedBox(height: 20),
-              
-                        _infoRow(
-                          context,
-                          label: "Due Date",
-                          value: checklist.dueDate != null
-                              ? "${checklist.dueDate!.day} ${_monthName(checklist.dueDate!.month)} ${checklist.dueDate!.year}"
-                              : "No due date",
-                        ),
-                        const SizedBox(height: 12),
-                        _infoRow(
-                          context,
-                          label: "Priority",
-                          value: checklist.priority,
-                          valueColor: _priorityColor(
-                            checklist.priority,
-                            colorScheme,
-                          ),
-                          showDot: true,
-                        ),
-                        const SizedBox(height: 12),
-                        _infoRow(
-                          context,
-                          label: "Type",
-                          value: checklist.type,
-                          valueColor: colorScheme.primary,
-                        ),
-              
-                        const SizedBox(height: 20),
-              
-                        Text("Description", style: textTheme.labelLarge),
-                        const SizedBox(height: 6),
-                        Text(
-                          checklist.description.isNotEmpty
-                              ? checklist.description
-                              : "No description added.",
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-              
-                        const SizedBox(height: 24),
-              
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: colorScheme.primary,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            "Checklist ($total)",
-                            style: textTheme.titleSmall?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-              
-                        const SizedBox(height: 16),
-              
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: checklist.categories.length,
-                          itemBuilder: (context, index) {
-                            final category = checklist.categories[index];
-                            final categoryItems =
-                                checklist.items[category] ?? [];
-                            final categoryCompleted = categoryItems
-                                .where((e) => e.checked)
-                                .length;
-              
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 15),
-                              child: ExpansionTile(
-                                initiallyExpanded: index == 0,
-                                title: Text(
-                                  "$category ($categoryCompleted/${categoryItems.length})",
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.primary,
+
+                            const SizedBox(height: 16),
+
+                            if (checklist.categories.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 15),
+                                child: Text(
+                                  "No categories added yet.",
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                children: [
-                                  if (categoryItems.isEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 15,
-                                      ),
-                                      child: Text(
-                                        "No Items Added",
-                                        style: textTheme.bodyMedium?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
+                              )
+                            else
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: checklist.categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = checklist.categories[index];
+                                  final categoryItems =
+                                      itemsByCategoryId[category.id] ?? [];
+                                  final categoryCompleted = categoryItems
+                                      .where((e) => e.checked)
+                                      .length;
+
+                                  return Card(
+                                    margin: const EdgeInsets.only(bottom: 15),
+                                    child: ExpansionTile(
+                                      initiallyExpanded: index == 0,
+                                      title: Text(
+                                        "${category.name} ($categoryCompleted/${categoryItems.length})",
+                                        style: textTheme.titleMedium?.copyWith(
+                                          color: colorScheme.primary,
                                         ),
                                       ),
+                                      children: [
+                                        if (categoryItems.isEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 15,
+                                            ),
+                                            child: Text(
+                                              "No Items Added",
+                                              style: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                color:
+                                                    colorScheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ),
+                                        ...categoryItems.map((item) {
+                                          return CheckboxListTile(
+                                            contentPadding:
+                                                const EdgeInsets.only(
+                                              left: 8,
+                                              right: 8,
+                                            ),
+                                            value: item.checked,
+                                            controlAffinity:
+                                                ListTileControlAffinity.leading,
+                                            onChanged: (value) {
+                                              // ---- Now writes ONE field on
+                                              // ONE small item document +
+                                              // increments the counter — no
+                                              // full checklist rewrite. ----
+                                              ref
+                                                  .read(
+                                                    checklistControllerProvider
+                                                        .notifier,
+                                                  )
+                                                  .toggleItemChecked(
+                                                    checklistId:
+                                                        widget.checklistId,
+                                                    itemId: item.id,
+                                                    checked: value ?? false,
+                                                  );
+                                            },
+                                            title: Text(item.title),
+                                            secondary: PopupMenuButton<String>(
+                                              onSelected: (value) {
+                                                if (value == "edit") {
+                                                  editItemDialog(item);
+                                                } else {
+                                                  deleteItemDialog(item);
+                                                }
+                                              },
+                                              itemBuilder: (context) => const [
+                                                PopupMenuItem(
+                                                  value: "edit",
+                                                  child: Text("Edit"),
+                                                ),
+                                                PopupMenuItem(
+                                                  value: "delete",
+                                                  child: Text("Delete"),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }),
+                                      ],
                                     ),
-                                  ...categoryItems.asMap().entries.map((entry) {
-                                    final itemIndex = entry.key;
-                                    final ChecklistItem item = entry.value;
-              
-                                    return CheckboxListTile(
-                                      contentPadding: const EdgeInsets.only(
-                                        left: 8,
-                                        right: 8,
-                                      ),
-                                      value: item.checked,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                      onChanged: (value) {
-                                        final notifier = ref.read(
-                                          checklistControllerProvider.notifier,
-                                        );
-              
-                                        notifier.loadChecklist(checklist);
-                                        notifier.updateItem(
-                                          category: category,
-                                          oldItem: item,
-                                          newItem: item.copyWith(
-                                            checked: value ?? false,
-                                          ),
-                                        );
-                                        notifier.updateChecklist();
-                                      },
-                                      title: Text(item.title),
-                                      secondary: PopupMenuButton<String>(
-                                        onSelected: (value) {
-                                          if (value == "edit") {
-                                            editItemDialog(
-                                              checklist,
-                                              category,
-                                              itemIndex,
-                                            );
-                                          } else {
-                                            deleteItemDialog(
-                                              checklist,
-                                              category,
-                                              itemIndex,
-                                            );
-                                          }
-                                        },
-                                        itemBuilder: (context) => const [
-                                          PopupMenuItem(
-                                            value: "edit",
-                                            child: Text("Edit"),
-                                          ),
-                                          PopupMenuItem(
-                                            value: "delete",
-                                            child: Text("Delete"),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ],
+                                  );
+                                },
                               ),
-                            );
-                          },
+
+                            const SizedBox(height: 80), // space for FAB
+                          ],
                         ),
-              
-                        const SizedBox(height: 80), // space for FAB
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

@@ -32,6 +32,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   // Returns a short "matched in ..." reason, or null if title itself matched.
+  //
+  // Note: item-level search was removed — items now live in a Firestore
+  // subcollection (per checklist), so matching against item titles here
+  // would require an extra query per checklist just to power a dashboard
+  // search box, which isn't worth the added reads. Title + category match
+  // covers the common case; a dedicated item search can be added later
+  // as its own feature if needed.
   String? _matchReason(ChecklistModel checklist, String query) {
     final lowerQuery = query.toLowerCase();
 
@@ -40,16 +47,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
 
     for (final category in checklist.categories) {
-      if (category.toLowerCase().contains(lowerQuery)) {
-        return "Category: $category";
-      }
-    }
-
-    for (final entry in checklist.items.entries) {
-      for (final item in entry.value) {
-        if (item.title.toLowerCase().contains(lowerQuery)) {
-          return "Item: ${item.title}";
-        }
+      if (category.name.toLowerCase().contains(lowerQuery)) {
+        return "Category: ${category.name}";
       }
     }
 
@@ -86,7 +85,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           controller: _searchController,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: "Search checklists, categories, items...",
+            hintText: "Search checklists or categories...",
             border: InputBorder.none,
             hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
@@ -110,7 +109,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             return _buildPrompt(
               context,
               icon: Icons.search,
-              message: "Search by checklist name, category, or item name.",
+              message: "Search by checklist name or category.",
             );
           }
 
@@ -131,12 +130,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               final result = results[index];
               final checklist = result.checklist;
 
-              int total = 0;
-              int completed = 0;
-              for (final items in checklist.items.values) {
-                total += items.length;
-                completed += items.where((e) => e.checked).length;
-              }
+              // ---- Reads aggregate counters directly — no items
+              // subcollection fetch needed here. ----
+              final total = checklist.totalItems;
+              final completed = checklist.completedItems;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),

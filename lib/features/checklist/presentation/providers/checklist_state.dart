@@ -1,27 +1,23 @@
-//this will become the single source of truth for all four screens, and each step will simply update the shared state without touching firebase until the final create action.
-
-
+import 'package:checklist_app/shared/models/ChecklistItemModel%20.dart';
+import 'package:checklist_app/shared/models/checklist_category_model.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 
 class ChecklistState {
-  // Step 1
   final String id;
   final String title;
   final String description;
   final DateTime? dueDate;
 
-  // Step 2
   final String type;
   final String priority;
   final bool reminderEnabled;
   final DateTime? reminderDateTime;
   final String notes;
 
-  // Step 3 & Step 4
-  final List<String> categories;
+  final List<ChecklistCategory> categories;
 
-  /// Category -> List of Items
-  final Map<String, List<ChecklistItem>> items;
+  /// categoryId -> List of draft items (not yet in Firestore).
+  final Map<String, List<ChecklistItemModel>> items;
 
   const ChecklistState({
     this.id = '',
@@ -47,8 +43,8 @@ class ChecklistState {
     bool? reminderEnabled,
     DateTime? reminderDateTime,
     String? notes,
-    List<String>? categories,
-    Map<String, List<ChecklistItem>>? items,
+    List<ChecklistCategory>? categories,
+    Map<String, List<ChecklistItemModel>>? items,
   }) {
     return ChecklistState(
       id: id ?? this.id,
@@ -77,7 +73,6 @@ class ChecklistState {
       reminderDateTime: reminderDateTime,
       notes: notes,
       categories: categories,
-      items: items,
     );
   }
 
