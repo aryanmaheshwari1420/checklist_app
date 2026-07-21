@@ -1,5 +1,4 @@
 import 'package:checklist_app/app/app_routes.dart';
-import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:checklist_app/shared/widgets/error_state.dart';
