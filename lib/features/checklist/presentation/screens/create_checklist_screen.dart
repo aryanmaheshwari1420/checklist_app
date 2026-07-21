@@ -21,7 +21,6 @@ class CreateCheckListScreen extends ConsumerStatefulWidget {
     this.showSkip = false,
     this.checklist,
     this.fromTemplate = false,
-
   });
 
   @override
@@ -73,40 +72,51 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
 
-    // ---- Guard: edit mode requires checklist data to prefill fields.
-    // If it's missing, warn the user instead of silently showing an empty form. ----
-    if (widget.mode == ChecklistMode.edit && widget.checklist == null) {
+  // ---- Reset stale draft state when starting a genuinely NEW checklist
+  // session. Deferred via addPostFrameCallback because calling
+  // ref.read(...).notifier methods that modify state synchronously inside
+  // initState() throws "Tried to modify a provider while the widget tree
+  // was building" — Riverpod requires state changes to happen after the
+  // current build phase completes. ----
+  if (widget.mode == ChecklistMode.create &&
+      widget.checklist == null &&
+      !widget.fromTemplate) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(checklistControllerProvider.notifier).clear();
+    });
+  }
+
+  if (widget.mode == ChecklistMode.edit && widget.checklist == null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't load checklist details. Please go back and try again."),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    });
+  }
+
+  if (widget.checklist != null) {
+    nameController.text = widget.checklist!.title;
+    descriptionController.text = widget.checklist!.description;
+    selectedDate = widget.checklist!.dueDate;
+
+    if (!widget.fromTemplate) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Couldn't load checklist details. Please go back and try again."),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ref
+            .read(checklistControllerProvider.notifier)
+            .loadChecklist(widget.checklist!);
       });
     }
-
-    if (widget.checklist != null) {
-      nameController.text = widget.checklist!.title;
-      descriptionController.text = widget.checklist!.description;
-      selectedDate = widget.checklist!.dueDate;
-
-      // Sync to riverpod controller for later saving — safe here
-      // since it's a simple notifier update, not a rebuild-triggering read.
-      if (!widget.fromTemplate) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          ref
-              .read(checklistControllerProvider.notifier)
-              .loadChecklist(widget.checklist!);
-        });
-      }
-    }
   }
+}
 
   void _handleSkip() {
     ref.read(checklistControllerProvider.notifier).clear();
@@ -160,10 +170,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
     Navigator.pushNamed(
       context,
       AppRoutes.checklistDetails,
-      arguments: {
-        'mode': widget.mode,
-        'checklistId': widget.checklistId,
-      },
+      arguments: {'mode': widget.mode, 'checklistId': widget.checklistId},
     );
   }
 
@@ -185,12 +192,7 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
               : "Edit Checklist",
         ),
         actions: widget.showSkip
-            ? [
-                TextButton(
-                  onPressed: _confirmSkip,
-                  child: const Text("Skip"),
-                ),
-              ]
+            ? [TextButton(onPressed: _confirmSkip, child: const Text("Skip"))]
             : null,
       ),
 
