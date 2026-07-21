@@ -2,6 +2,7 @@ import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/recent_checklist_card.dart';
+import 'package:checklist_app/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -41,7 +42,12 @@ class AllChecklistsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text("All Checklists")),
       body: dashboardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text(error.toString())),
+        error: (error, stack) => Scaffold(
+          body: ErrorState(
+            message: friendlyErrorMessage(error),
+            onRetry: () => ref.invalidate(dashboardProvider),
+          ),
+        ),
         data: (checklists) {
           if (checklists.isEmpty) {
             return const Center(child: Text("No checklists created yet."));
@@ -55,7 +61,6 @@ class AllChecklistsScreen extends ConsumerWidget {
 
               final totalItems = checklist.totalItems;
               final completedItems = checklist.completedItems;
-
 
               String status;
               if (completedItems == totalItems && totalItems > 0) {

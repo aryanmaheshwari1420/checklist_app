@@ -10,6 +10,7 @@ import 'package:checklist_app/features/dashboard/presentation/widgets/overall_pr
 import 'package:checklist_app/features/dashboard/presentation/widgets/quick_actions_section.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/recent_checklist_card.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/summary_card.dart';
+import 'package:checklist_app/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,8 +55,12 @@ class DashboardScreen extends ConsumerWidget {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
 
-      error: (error, stack) =>
-          Scaffold(body: Center(child: Text(error.toString()))),
+      error: (error, stack) => Scaffold(
+    body: ErrorState(
+      message: friendlyErrorMessage(error),
+      onRetry: () => ref.invalidate(dashboardProvider),
+    ),
+  ),
 
       data: (checklists) {
         final hasChecklist = checklists.isNotEmpty;

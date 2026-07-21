@@ -1,6 +1,7 @@
 import 'package:checklist_app/features/checklist/presentation/screens/checklist_overview_screen.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
+import 'package:checklist_app/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -103,7 +104,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       ),
       body: dashboardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(error.toString())),
+        error: (error, stack) => Scaffold(
+          body: ErrorState(
+            message: friendlyErrorMessage(error),
+            onRetry: () => ref.invalidate(dashboardProvider),
+          ),
+        ),
         data: (checklists) {
           if (_query.isEmpty) {
             return _buildPrompt(
@@ -152,8 +158,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                   title: Text(
                     checklist.title,
-                    style: textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,8 +168,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       const SizedBox(height: 4),
                       Text(
                         "$completed of $total completed",
-                        style: textTheme.bodySmall
-                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       if (result.matchReason != null) ...[
                         const SizedBox(height: 4),
@@ -185,9 +193,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ChecklistOverviewScreen(
-                          checklistId: checklist.id,
-                        ),
+                        builder: (_) =>
+                            ChecklistOverviewScreen(checklistId: checklist.id),
                       ),
                     );
                   },
@@ -219,8 +226,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: textTheme.bodyLarge
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

@@ -7,6 +7,7 @@ import 'package:checklist_app/features/checklist/presentation/providers/checklis
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/shared/models/ChecklistItemModel%20.dart';
 import 'package:checklist_app/shared/utils/dialog_utils.dart';
+import 'package:checklist_app/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -168,12 +169,10 @@ class _ChecklistOverviewScreenState
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, _) => Scaffold(
-        body: Center(
-          child: Text(
-            error.toString().contains('not found')
-                ? "Checklist not found."
-                : error.toString(),
-          ),
+        body: ErrorState(
+          message: friendlyErrorMessage(error),
+          onRetry: () =>
+              ref.invalidate(checklistByIdProvider(widget.checklistId)),
         ),
       ),
       data: (checklist) {
@@ -193,7 +192,9 @@ class _ChecklistOverviewScreenState
             // Group items by categoryId for rendering.
             final itemsByCategoryId = <String, List<ChecklistItemModel>>{};
             for (final item in items) {
-              itemsByCategoryId.putIfAbsent(item.categoryId, () => []).add(item);
+              itemsByCategoryId
+                  .putIfAbsent(item.categoryId, () => [])
+                  .add(item);
             }
 
             return PopScope(
@@ -255,7 +256,10 @@ class _ChecklistOverviewScreenState
                           value: "delete",
                           child: Row(
                             children: <Widget>[
-                              Icon(Icons.delete_outline, color: colorScheme.error),
+                              Icon(
+                                Icons.delete_outline,
+                                color: colorScheme.error,
+                              ),
                               const SizedBox(width: 10),
                               Text(
                                 "Delete Checklist",
@@ -469,18 +473,18 @@ class _ChecklistOverviewScreenState
                                               "No Items Added",
                                               style: textTheme.bodyMedium
                                                   ?.copyWith(
-                                                color:
-                                                    colorScheme.onSurfaceVariant,
-                                              ),
+                                                    color: colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
                                             ),
                                           ),
                                         ...categoryItems.map((item) {
                                           return CheckboxListTile(
                                             contentPadding:
                                                 const EdgeInsets.only(
-                                              left: 8,
-                                              right: 8,
-                                            ),
+                                                  left: 8,
+                                                  right: 8,
+                                                ),
                                             value: item.checked,
                                             controlAffinity:
                                                 ListTileControlAffinity.leading,
