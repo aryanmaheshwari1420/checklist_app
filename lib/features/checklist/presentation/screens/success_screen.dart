@@ -48,7 +48,11 @@ class SuccessScreen extends ConsumerWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: colorScheme.primary, width: 3),
                   ),
-                  child: Icon(Icons.check, size: 60, color: colorScheme.primary),
+                  child: Icon(
+                    Icons.check,
+                    size: 60,
+                    color: colorScheme.primary,
+                  ),
                 ),
 
                 const SizedBox(height: 40),
@@ -67,8 +71,9 @@ class SuccessScreen extends ConsumerWidget {
                       ? "Your checklist has been created successfully."
                       : "Your checklist has been updated successfully.",
                   textAlign: TextAlign.center,
-                  style: textTheme.bodyLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
 
                 const SizedBox(height: 50),
@@ -80,12 +85,10 @@ class SuccessScreen extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       ref.invalidate(checklistByIdProvider(checklistId));
-                      Navigator.pushReplacement(
+                      Navigator.pushReplacementNamed(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              ChecklistOverviewScreen(checklistId: checklistId),
-                        ),
+                        AppRoutes.viewChecklist,
+                        arguments: {'checklistId': checklistId},
                       );
                     },
                     child: const Text("View Checklist"),
