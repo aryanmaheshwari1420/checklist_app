@@ -12,6 +12,7 @@ class CreateCheckListScreen extends ConsumerStatefulWidget {
   final ChecklistMode mode;
   final bool showSkip;
   final ChecklistModel? checklist;
+  final bool fromTemplate;
 
   const CreateCheckListScreen({
     super.key,
@@ -19,6 +20,8 @@ class CreateCheckListScreen extends ConsumerStatefulWidget {
     this.checklistId,
     this.showSkip = false,
     this.checklist,
+    this.fromTemplate = false,
+
   });
 
   @override
@@ -94,12 +97,14 @@ class _CreateCheckListScreenState extends ConsumerState<CreateCheckListScreen> {
 
       // Sync to riverpod controller for later saving — safe here
       // since it's a simple notifier update, not a rebuild-triggering read.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        ref
-            .read(checklistControllerProvider.notifier)
-            .loadChecklist(widget.checklist!);
-      });
+      if (!widget.fromTemplate) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref
+              .read(checklistControllerProvider.notifier)
+              .loadChecklist(widget.checklist!);
+        });
+      }
     }
   }
 

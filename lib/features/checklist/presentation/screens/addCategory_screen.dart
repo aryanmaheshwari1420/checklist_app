@@ -13,7 +13,7 @@ class AddCategoryScreen extends ConsumerStatefulWidget {
   final ChecklistMode mode;
   final String? checklistId;
   final ChecklistModel? checklist;
-  final EditFlow editFlow;
+  final EditFlow? editFlow;
 
   const AddCategoryScreen({
     super.key,

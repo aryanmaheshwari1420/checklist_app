@@ -52,12 +52,12 @@ class AppRouter {
           ),
         );
 
-      // case AppRoutes.templateDetails:
-      //   final args = settings.arguments as Map<String, dynamic>;
-      //   return MaterialPageRoute(
-      //     builder: (_) =>
-      //         TemplateOverviewScreen(templateId: args['templateId'] as String),
-      //   );
+      case AppRoutes.templateDetails:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) =>
+              TemplateOverviewScreen(templateId: args['templateId'] as String),
+        );
 
       case AppRoutes.checklistDetails:
         final args = settings.arguments as Map<String, dynamic>?;
@@ -99,6 +99,8 @@ class AppRouter {
             checklistId: args?["checklistId"],
             showSkip: args?["showSkip"] ?? false,
             checklist: args?["checklist"],
+            fromTemplate: args?["fromTemplate"] ?? false,   // <-- ye line add karo
+
           ),
         );
 
