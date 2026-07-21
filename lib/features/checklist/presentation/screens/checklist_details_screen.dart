@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
+import 'package:checklist_app/features/checklist/domain/enums/edit_flow.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,6 +201,7 @@ class _ChecklistDetailScreenState extends ConsumerState<ChecklistDetailScreen> {
       arguments: {
         'mode': widget.mode,
         'checklistId': widget.checklistId,
+        'editFlow': EditFlow.full,
       },
     );
   }

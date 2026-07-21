@@ -1,0 +1,4 @@
+enum EditFlow {
+  full,
+  quick,
+}

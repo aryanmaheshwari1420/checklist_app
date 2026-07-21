@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
+import 'package:checklist_app/features/checklist/domain/enums/edit_flow.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
 import 'package:checklist_app/shared/models/checklist_category_model.dart';
@@ -12,12 +13,14 @@ class AddCategoryScreen extends ConsumerStatefulWidget {
   final ChecklistMode mode;
   final String? checklistId;
   final ChecklistModel? checklist;
+  final EditFlow editFlow;
 
   const AddCategoryScreen({
     super.key,
     required this.mode,
     this.checklistId,
     this.checklist,
+    required this.editFlow,
   });
 
   @override
@@ -361,6 +364,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                                 arguments: {
                                   'mode': widget.mode,
                                   'checklistId': widget.checklistId,
+                                  'editFlow': widget.editFlow,
                                 },
                               );
                             },

@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
+import 'package:checklist_app/features/checklist/domain/enums/edit_flow.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_items_provider.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
@@ -13,11 +14,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class AddITemCategoryScreen extends ConsumerStatefulWidget {
   final ChecklistMode mode;
   final String? checklistId;
+  final EditFlow editFlow;
 
   const AddITemCategoryScreen({
     super.key,
     required this.mode,
     this.checklistId,
+    required this.editFlow,
   });
 
   @override
@@ -33,9 +36,6 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
   // =================================================================
   // CREATE MODE — draft state, single batch write at the end
   // =================================================================
-
-
-  
 
   bool _hasAnyDraftItems(Map<String, List<ChecklistItemModel>> items) {
     return items.values.any((list) => list.isNotEmpty);
@@ -75,7 +75,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
       if (checklistId == null || checklistId.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Failed to create checklist. Please try again."),
+            content: const Text(
+              "Failed to create checklist. Please try again.",
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -127,9 +129,11 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                 if (trimmed.isEmpty) return "Item name can't be empty";
 
                 final currentItems =
-                    ref.read(checklistControllerProvider).items[categoryId] ?? [];
-                final isDuplicate = currentItems
-                    .any((e) => e.title.toLowerCase() == trimmed.toLowerCase());
+                    ref.read(checklistControllerProvider).items[categoryId] ??
+                    [];
+                final isDuplicate = currentItems.any(
+                  (e) => e.title.toLowerCase() == trimmed.toLowerCase(),
+                );
                 if (isDuplicate) return "An item with this name already exists";
 
                 return null;
@@ -181,9 +185,11 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
 
               final currentItems =
                   ref.read(checklistControllerProvider).items[categoryId] ?? [];
-              final isDuplicate = currentItems.any((e) =>
-                  e.id != oldItem.id &&
-                  e.title.toLowerCase() == trimmed.toLowerCase());
+              final isDuplicate = currentItems.any(
+                (e) =>
+                    e.id != oldItem.id &&
+                    e.title.toLowerCase() == trimmed.toLowerCase(),
+              );
               if (isDuplicate) return "An item with this name already exists";
 
               return null;
@@ -200,7 +206,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
               if (!formKey.currentState!.validate()) return;
               final value = controller.text.trim();
 
-              ref.read(checklistControllerProvider.notifier).updateItem(
+              ref
+                  .read(checklistControllerProvider.notifier)
+                  .updateItem(
                     categoryId: categoryId,
                     oldItem: oldItem,
                     newItem: oldItem.copyWith(title: value),
@@ -248,7 +256,12 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
   // no draft batching involved.
   // =================================================================
 
-  void _addLiveItemDialog(String checklistId, String categoryId, String categoryName, int nextOrder) {
+  void _addLiveItemDialog(
+    String checklistId,
+    String categoryId,
+    String categoryName,
+    int nextOrder,
+  ) {
     final TextEditingController controller = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
@@ -281,7 +294,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                 if (!formKey.currentState!.validate()) return;
                 final value = controller.text.trim();
 
-                await ref.read(checklistControllerProvider.notifier).addItemToChecklist(
+                await ref
+                    .read(checklistControllerProvider.notifier)
+                    .addItemToChecklist(
                       checklistId: checklistId,
                       categoryId: categoryId,
                       title: value,
@@ -330,7 +345,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
               if (!formKey.currentState!.validate()) return;
               final value = controller.text.trim();
 
-              await ref.read(checklistControllerProvider.notifier).updateItemTitle(
+              await ref
+                  .read(checklistControllerProvider.notifier)
+                  .updateItemTitle(
                     checklistId: checklistId,
                     itemId: item.id,
                     title: value,
@@ -361,7 +378,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () async {
-              await ref.read(checklistControllerProvider.notifier).deleteItemFromChecklist(
+              await ref
+                  .read(checklistControllerProvider.notifier)
+                  .deleteItemFromChecklist(
                     checklistId: checklistId,
                     itemId: item.id,
                     wasChecked: item.checked,
@@ -385,8 +404,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
       // This only needs to persist any metadata changes made earlier in
       // the wizard (title/description/type/priority/notes) — still a
       // single lightweight metadata-only write, no items touched.
-      // await ref.read(checklistControllerProvider.notifier).updateChecklist();
-
+      if (widget.editFlow == EditFlow.full) {
+        await ref.read(checklistControllerProvider.notifier).updateChecklist();
+      }
       if (!mounted) return;
 
       ref.invalidate(dashboardProvider);
@@ -424,10 +444,10 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
         );
       }
 
-      final checklistAsync =
-          ref.watch(checklistByIdProvider(widget.checklistId!));
-      final itemsAsync =
-          ref.watch(checklistItemsProvider(widget.checklistId!));
+      final checklistAsync = ref.watch(
+        checklistByIdProvider(widget.checklistId!),
+      );
+      final itemsAsync = ref.watch(checklistItemsProvider(widget.checklistId!));
 
       return checklistAsync.when(
         loading: () =>
@@ -442,7 +462,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
           data: (liveItems) {
             final itemsByCategoryId = <String, List<ChecklistItemModel>>{};
             for (final item in liveItems) {
-              itemsByCategoryId.putIfAbsent(item.categoryId, () => []).add(item);
+              itemsByCategoryId
+                  .putIfAbsent(item.categoryId, () => [])
+                  .add(item);
             }
             return _buildScaffold(
               categories: checklist.categories,
@@ -537,7 +559,10 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                   onChanged: (value) {
                                     if (_isEditMode) {
                                       ref
-                                          .read(checklistControllerProvider.notifier)
+                                          .read(
+                                            checklistControllerProvider
+                                                .notifier,
+                                          )
                                           .toggleItemChecked(
                                             checklistId: widget.checklistId!,
                                             itemId: item.id,
@@ -545,11 +570,16 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                           );
                                     } else {
                                       ref
-                                          .read(checklistControllerProvider.notifier)
+                                          .read(
+                                            checklistControllerProvider
+                                                .notifier,
+                                          )
                                           .updateItem(
                                             categoryId: category.id,
                                             oldItem: item,
-                                            newItem: item.copyWith(checked: value),
+                                            newItem: item.copyWith(
+                                              checked: value,
+                                            ),
                                           );
                                     }
                                   },
@@ -561,15 +591,23 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                       if (value == "edit") {
                                         _isEditMode
                                             ? _editLiveItemDialog(
-                                                widget.checklistId!, item)
+                                                widget.checklistId!,
+                                                item,
+                                              )
                                             : _editDraftItemDialog(
-                                                category.id, item);
+                                                category.id,
+                                                item,
+                                              );
                                       } else {
                                         _isEditMode
                                             ? _deleteLiveItemDialog(
-                                                widget.checklistId!, item)
+                                                widget.checklistId!,
+                                                item,
+                                              )
                                             : _deleteDraftItemDialog(
-                                                category.id, item);
+                                                category.id,
+                                                item,
+                                              );
                                       }
                                     },
                                     itemBuilder: (context) => const [
@@ -596,17 +634,21 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                           categoryItemList.length,
                                         )
                                       : _addDraftItemDialog(
-                                          category.id, category.name);
+                                          category.id,
+                                          category.name,
+                                        );
                                 },
                                 child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 15),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 15,
+                                  ),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.add,
-                                          color: colorScheme.primary),
+                                      Icon(
+                                        Icons.add,
+                                        color: colorScheme.primary,
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         "Add Item",
@@ -641,7 +683,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                   child: ElevatedButton(
                     onPressed: _isSubmitting
                         ? null
-                        : (_isEditMode ? _handleEditSubmit : _handleCreateSubmit),
+                        : (_isEditMode
+                              ? _handleEditSubmit
+                              : _handleCreateSubmit),
                     child: _isSubmitting
                         ? SizedBox(
                             height: 20,

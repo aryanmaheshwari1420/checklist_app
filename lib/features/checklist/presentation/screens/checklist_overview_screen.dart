@@ -1,5 +1,6 @@
 import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/domain/enums/checklist_status.dart';
+import 'package:checklist_app/features/checklist/domain/enums/edit_flow.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_items_provider.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_provider.dart';
@@ -230,6 +231,7 @@ class _ChecklistOverviewScreenState
                             "showSkip": false,
                             "checklistId": widget.checklistId,
                             "checklist": checklist,
+                            "editFlow": EditFlow.full,
                           },
                         );
                       },
@@ -276,6 +278,7 @@ class _ChecklistOverviewScreenState
                         "mode": ChecklistMode.edit,
                         "checklistId": widget.checklistId,
                         "checklist": checklist,
+                        "editFlow": EditFlow.quick,
                       },
                     );
                   },

@@ -48,6 +48,7 @@ class AppRouter {
             mode: args?["mode"] ?? ChecklistMode.create,
             checklistId: args?["checklistId"],
             checklist: args?["checklist"],
+            editFlow: args?["editFlow"],
           ),
         );
 
@@ -75,6 +76,7 @@ class AppRouter {
           builder: (_) => AddITemCategoryScreen(
             mode: args?["mode"] ?? ChecklistMode.create,
             checklistId: args?["checklistId"],
+            editFlow: args?["editFlow"],
           ),
         );
 
