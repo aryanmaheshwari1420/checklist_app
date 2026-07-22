@@ -8,15 +8,16 @@ import 'package:checklist_app/features/dashboard/presentation/providers/dashboar
 import 'package:checklist_app/shared/models/ChecklistItemModel%20.dart';
 import 'package:checklist_app/shared/models/checklist_category_model.dart';
 import 'package:checklist_app/shared/utils/dialog_utils.dart';
+import 'package:checklist_app/shared/widgets/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddITemCategoryScreen extends ConsumerStatefulWidget {
+class AddItemCategoryScreen extends ConsumerStatefulWidget {
   final ChecklistMode mode;
   final String? checklistId;
   final EditFlow editFlow;
 
-  const AddITemCategoryScreen({
+  const AddItemCategoryScreen({
     super.key,
     required this.mode,
     this.checklistId,
@@ -24,11 +25,11 @@ class AddITemCategoryScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AddITemCategoryScreen> createState() =>
-      _AddITemCategoryScreenState();
+  ConsumerState<AddItemCategoryScreen> createState() =>
+      _AddItemCategoryScreenState();
 }
 
-class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
+class _AddItemCategoryScreenState extends ConsumerState<AddItemCategoryScreen> {
   bool _isSubmitting = false;
 
   bool get _isEditMode => widget.mode == ChecklistMode.edit;
@@ -37,11 +38,9 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
   // CREATE MODE — draft state, single batch write at the end
   // =================================================================
 
-  bool _hasAnyDraftItems(Map<String, List<ChecklistItemModel>> items) {
-    return items.values.any((list) => list.isNotEmpty);
-  }
-
   Future<void> _handleCreateSubmit() async {
+    if (_isSubmitting) return;
+
     final state = ref.read(checklistControllerProvider);
 
     if (state.categories.isEmpty) {
@@ -54,59 +53,50 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
       return;
     }
 
-    if (!_hasAnyDraftItems(state.items)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please add at least one item before continuing."),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
     setState(() => _isSubmitting = true);
 
-    try {
-      final controller = ref.read(checklistControllerProvider.notifier);
-      final checklistId = await controller.createChecklist();
+    String? checklistId;
 
-      if (!mounted) return;
+    await ErrorHandler.run(
+      context: context,
+      action: () async {
+        final controller = ref.read(checklistControllerProvider.notifier);
+        checklistId = await controller.createChecklist();
+      },
+      onSuccess: () {
+        if (!mounted) return;
 
-      if (checklistId == null || checklistId.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              "Failed to create checklist. Please try again.",
+        if (checklistId == null || checklistId!.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                "Failed to create checklist. Please try again.",
+              ),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              behavior: SnackBarBehavior.floating,
             ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            behavior: SnackBarBehavior.floating,
-          ),
+          );
+          return;
+        }
+
+        ref.invalidate(dashboardProvider);
+
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.success,
+          arguments: {"checklistId": checklistId, "mode": widget.mode},
         );
-        return;
-      }
+      },
+    );
 
-      ref.invalidate(dashboardProvider);
-
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.success,
-        arguments: {"checklistId": checklistId, "mode": widget.mode},
-      );
-    } catch (e) {
-      debugPrint("CREATE CHECKLIST ERROR: $e");
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Failed to create checklist. Please try again."),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+    if (mounted) {
+      setState(() => _isSubmitting = false);
     }
   }
+
+  // Draft (create-mode) item operations are pure local state mutations on
+  // the controller — no async/Firestore call, so no try/catch is needed
+  // here. They're intentionally NOT wrapped in ErrorHandler.run.
 
   void _addDraftItemDialog(String categoryId, String categoryName) {
     final TextEditingController controller = TextEditingController();
@@ -204,15 +194,14 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
           ElevatedButton(
             onPressed: () {
               if (!formKey.currentState!.validate()) return;
-              final value = controller.text.trim();
 
-              ref
-                  .read(checklistControllerProvider.notifier)
-                  .updateItem(
-                    categoryId: categoryId,
-                    oldItem: oldItem,
-                    newItem: oldItem.copyWith(title: value),
-                  );
+              ref.read(checklistControllerProvider.notifier).updateItem(
+                categoryId: categoryId,
+                oldItem: oldItem,
+                newItem: oldItem.copyWith(
+                  title: controller.text.trim(),
+                ),
+              );
 
               Navigator.pop(dialogContext);
             },
@@ -264,133 +253,235 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
   ) {
     final TextEditingController controller = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    bool isSubmitting = false;
 
     showBlurDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: Text("Add Item to $categoryName"),
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) => AlertDialog(
+            title: Text("Add Item to $categoryName"),
+            content: Form(
+              key: formKey,
+              child: TextFormField(
+                controller: controller,
+                autofocus: true,
+                maxLength: 60,
+                enabled: !isSubmitting,
+                decoration: const InputDecoration(hintText: "Enter item name"),
+                validator: (value) {
+                  final trimmed = value?.trim() ?? '';
+                  if (trimmed.isEmpty) return "Item name can't be empty";
+                  return null;
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => Navigator.pop(dialogContext),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) return;
+                        setDialogState(() => isSubmitting = true);
+
+                        await ErrorHandler.run(
+                          context: dialogContext,
+                          action: () => ref
+                              .read(checklistControllerProvider.notifier)
+                              .addItemToChecklist(
+                                checklistId: checklistId,
+                                categoryId: categoryId,
+                                title: controller.text.trim(),
+                                order: nextOrder,
+                              ),
+                          onSuccess: () {
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                          },
+                        );
+
+                        if (dialogContext.mounted) {
+                          setDialogState(() => isSubmitting = false);
+                        }
+                      },
+                child: isSubmitting
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text("Add"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _editLiveItemDialog(
+    String checklistId,
+    ChecklistItemModel item,
+    List<ChecklistItemModel> categoryItems,
+  ) {
+    final controller = TextEditingController(text: item.title);
+    final formKey = GlobalKey<FormState>();
+    bool isSubmitting = false;
+
+    showBlurDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text("Edit Item"),
           content: Form(
             key: formKey,
             child: TextFormField(
               controller: controller,
               autofocus: true,
               maxLength: 60,
+              enabled: !isSubmitting,
               decoration: const InputDecoration(hintText: "Enter item name"),
               validator: (value) {
                 final trimmed = value?.trim() ?? '';
-                if (trimmed.isEmpty) return "Item name can't be empty";
+
+                if (trimmed.isEmpty) {
+                  return "Item name can't be empty";
+                }
+
+                final normalized =
+                    trimmed.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+                final isDuplicate = categoryItems.any(
+                  (e) =>
+                      e.id != item.id &&
+                      e.title
+                              .replaceAll(RegExp(r'\s+'), ' ')
+                              .trim()
+                              .toLowerCase() ==
+                          normalized.toLowerCase(),
+                );
+
+                if (isDuplicate) {
+                  return "An item with this name already exists";
+                }
+
                 return null;
               },
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
+              onPressed: isSubmitting
+                  ? null
+                  : () => Navigator.pop(dialogContext),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
-                final value = controller.text.trim();
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isSubmitting = true);
 
-                await ref
-                    .read(checklistControllerProvider.notifier)
-                    .addItemToChecklist(
-                      checklistId: checklistId,
-                      categoryId: categoryId,
-                      title: value,
-                      order: nextOrder,
-                    );
+                      await ErrorHandler.run(
+                        context: dialogContext,
+                        action: () => ref
+                            .read(checklistControllerProvider.notifier)
+                            .updateItemTitle(
+                              checklistId: checklistId,
+                              itemId: item.id,
+                              title: controller.text.trim(),
+                            ),
+                        onSuccess: () {
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext);
+                          }
+                        },
+                      );
 
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              },
-              child: const Text("Add"),
+                      if (dialogContext.mounted) {
+                        setDialogState(() => isSubmitting = false);
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text("Update"),
             ),
           ],
-        );
-      },
-    );
-  }
-
-  void _editLiveItemDialog(String checklistId, ChecklistItemModel item) {
-    final controller = TextEditingController(text: item.title);
-    final formKey = GlobalKey<FormState>();
-
-    showBlurDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text("Edit Item"),
-        content: Form(
-          key: formKey,
-          child: TextFormField(
-            controller: controller,
-            autofocus: true,
-            maxLength: 60,
-            decoration: const InputDecoration(hintText: "Enter item name"),
-            validator: (value) {
-              final trimmed = value?.trim() ?? '';
-              if (trimmed.isEmpty) return "Item name can't be empty";
-              return null;
-            },
-          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (!formKey.currentState!.validate()) return;
-              final value = controller.text.trim();
-
-              await ref
-                  .read(checklistControllerProvider.notifier)
-                  .updateItemTitle(
-                    checklistId: checklistId,
-                    itemId: item.id,
-                    title: value,
-                  );
-
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: const Text("Update"),
-          ),
-        ],
       ),
     );
   }
 
   void _deleteLiveItemDialog(String checklistId, ChecklistItemModel item) {
+    bool isSubmitting = false;
+
     showBlurDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text("Delete Item"),
-        content: const Text("Are you sure you want to delete this item?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text("Delete Item"),
+          content: const Text("Are you sure you want to delete this item?"),
+          actions: [
+            TextButton(
+              onPressed: isSubmitting
+                  ? null
+                  : () => Navigator.pop(dialogContext),
+              child: const Text("Cancel"),
             ),
-            onPressed: () async {
-              await ref
-                  .read(checklistControllerProvider.notifier)
-                  .deleteItemFromChecklist(
-                    checklistId: checklistId,
-                    itemId: item.id,
-                    wasChecked: item.checked,
-                  );
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      setDialogState(() => isSubmitting = true);
 
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: const Text("Delete"),
-          ),
-        ],
+                      await ErrorHandler.run(
+                        context: dialogContext,
+                        action: () => ref
+                            .read(checklistControllerProvider.notifier)
+                            .deleteItemFromChecklist(
+                              checklistId: checklistId,
+                              itemId: item.id,
+                              wasChecked: item.checked,
+                            ),
+                        onSuccess: () {
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext);
+                          }
+                        },
+                      );
+
+                      if (dialogContext.mounted) {
+                        setDialogState(() => isSubmitting = false);
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text("Delete"),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -399,41 +490,60 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      // Items were already saved live as the user interacted with them.
-      // This only needs to persist any metadata changes made earlier in
-      // the wizard (title/description/type/priority/notes) — still a
-      // single lightweight metadata-only write, no items touched.
-      if (widget.editFlow == EditFlow.full) {
-        await ref.read(checklistControllerProvider.notifier).updateChecklist();
-      }
-      if (!mounted) return;
+    await ErrorHandler.run(
+      context: context,
+      action: () async {
+        // Items were already saved live as the user interacted with them.
+        // This only needs to persist any metadata changes made earlier in
+        // the wizard (title/description/type/priority/notes) — still a
+        // single lightweight metadata-only write, no items touched.
+        if (widget.editFlow == EditFlow.full) {
+          await ref
+              .read(checklistControllerProvider.notifier)
+              .updateChecklist();
+        }
+      },
+      onSuccess: () {
+        if (!mounted) return;
 
-      ref.invalidate(dashboardProvider);
+        ref.invalidate(dashboardProvider);
 
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.success,
-        arguments: {"checklistId": widget.checklistId, "mode": widget.mode},
-      );
-    } catch (e) {
-      debugPrint("UPDATE CHECKLIST ERROR: $e");
-      if (!mounted) return;
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.success,
+          arguments: {"checklistId": widget.checklistId, "mode": widget.mode},
+        );
+      },
+    );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Failed to save changes. Please try again."),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+    if (mounted) {
+      setState(() => _isSubmitting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // PopScope now wraps the entire screen — the missing-ID error state,
+    // the loading/error states of the async providers, and the main
+    // scaffold — so a back-swipe/press is blocked consistently by
+    // _isSubmitting no matter which branch is currently showing.
+    return PopScope(
+      canPop: !_isSubmitting,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Please wait while your changes are being saved."),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      child: _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
     if (_isEditMode) {
       if (widget.checklistId == null || widget.checklistId!.isEmpty) {
         return Scaffold(
@@ -556,18 +666,27 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                   value: item.checked,
                                   controlAffinity:
                                       ListTileControlAffinity.leading,
-                                  onChanged: (value) {
+                                  onChanged: (value) async {
+                                    // Tri-state checkboxes can report `null`
+                                    // (e.g. tristate widgets, platform edge
+                                    // cases) — bail out instead of silently
+                                    // coercing that into `false`.
+                                    if (value == null) return;
+
                                     if (_isEditMode) {
-                                      ref
-                                          .read(
-                                            checklistControllerProvider
-                                                .notifier,
-                                          )
-                                          .toggleItemChecked(
-                                            checklistId: widget.checklistId!,
-                                            itemId: item.id,
-                                            checked: value ?? false,
-                                          );
+                                      await ErrorHandler.run(
+                                        context: context,
+                                        action: () => ref
+                                            .read(
+                                              checklistControllerProvider
+                                                  .notifier,
+                                            )
+                                            .toggleItemChecked(
+                                              checklistId: widget.checklistId!,
+                                              itemId: item.id,
+                                              checked: value,
+                                            ),
+                                      );
                                     } else {
                                       ref
                                           .read(
@@ -593,6 +712,7 @@ class _AddITemCategoryScreenState extends ConsumerState<AddITemCategoryScreen> {
                                             ? _editLiveItemDialog(
                                                 widget.checklistId!,
                                                 item,
+                                                categoryItemList,
                                               )
                                             : _editDraftItemDialog(
                                                 category.id,

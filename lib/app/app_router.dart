@@ -73,7 +73,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
 
         return MaterialPageRoute(
-          builder: (_) => AddITemCategoryScreen(
+          builder: (_) => AddItemCategoryScreen(
             mode: args?["mode"] ?? ChecklistMode.create,
             checklistId: args?["checklistId"],
             editFlow: args?["editFlow"],
