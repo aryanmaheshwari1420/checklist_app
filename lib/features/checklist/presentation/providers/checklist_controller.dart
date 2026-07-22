@@ -80,9 +80,6 @@ class ChecklistController extends Notifier<ChecklistState> {
 
   /// Metadata-only update — never touches items.
   Future<void> updateChecklist() async {
-    print("id: ${state.id}");
-  print("title: ${state.title}");
-  print("categories: ${state.categories.length}");
     final repository = ref.read(checklistRepositoryProvider);
 
     await repository.updateChecklistMetadata(state.toChecklistModel());
