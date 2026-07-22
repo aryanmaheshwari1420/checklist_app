@@ -44,43 +44,50 @@ class TemplateRepository {
     });
   }
 
-  // Future<TemplateModel> getTemplateById(String templateId) async {
-  //   final doc = await _templatesRef.doc(templateId).get();
-
-  //   if (!doc.exists) {
-  //     throw Exception('Template not found');
-  //   }
-
-  //   return TemplateModel.fromMap(doc.data()!);
-  // }
-
   Future<String> createTemplate(TemplateModel template) async {
     final doc = _templatesRef.doc();
 
-    await doc.set({
-      ...template.toMap(),
-      'id': doc.id,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }).catchError((e){
-            debugPrint("Background sync failed for template ${doc.id}: $e");
-    });
+    try {
+      await doc.set({
+        ...template.toMap(),
+        'id': doc.id,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      // 'unavailable' means Firestore queued this locally and will sync
+      // once back online — expected, not a failure the user needs to see.
+      if (e.code == 'unavailable') return doc.id;
+
+      debugPrint("Background sync failed for template ${doc.id}: $e");
+      rethrow;
+    }
 
     return doc.id;
   }
 
   Future<void> updateTemplate(TemplateModel template) async {
-    await _templatesRef.doc(template.id).update({
-      ...template.toMap(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }).catchError((e){
+    try {
+      await _templatesRef.doc(template.id).update({
+        ...template.toMap(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') return;
+
       debugPrint("Background sync failed for template ${template.id}: $e");
-    });
+      rethrow;
+    }
   }
 
   Future<void> deleteTemplate(String templateId) async {
-    await _templatesRef.doc(templateId).delete().catchError((e){
+    try {
+      await _templatesRef.doc(templateId).delete();
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') return;
+
       debugPrint("Background sync failed for template delete $templateId: $e");
-    });
+      rethrow;
+    }
   }
 }

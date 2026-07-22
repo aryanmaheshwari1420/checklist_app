@@ -55,6 +55,33 @@ class ErrorHandler {
     );
   }
 
+  /// Same as [showSnackBar] but adds a "Retry" action button — use this
+  /// for one-shot actions (delete, retry a failed sync, etc.) where the
+  /// user can immediately retry with a single tap instead of reopening
+  /// a form or navigating back.
+  static void showSnackBarWithRetry(
+    BuildContext context,
+    Object error,
+    VoidCallback onRetry, {
+    Color? backgroundColor,
+  }) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(getMessage(error)),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: "Retry",
+          textColor: Colors.white,
+          onPressed: onRetry,
+        ),
+      ),
+    );
+  }
+
   static Future<T?> run<T>({
   required BuildContext context,
   required Future<T> Function() action,
@@ -74,4 +101,30 @@ class ErrorHandler {
     return null;
   }
 }
+
+  /// Same as [run] but shows a "Retry" action in the error SnackBar
+  /// that re-invokes the same action on tap.
+  static Future<T?> runWithRetry<T>({
+    required BuildContext context,
+    required Future<T> Function() action,
+    VoidCallback? onSuccess,
+  }) async {
+    try {
+      final result = await action();
+      onSuccess?.call();
+      return result;
+    } catch (error, stackTrace) {
+      debugPrint('ErrorHandler caught: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (context.mounted) {
+        showSnackBarWithRetry(
+          context,
+          error,
+          () => runWithRetry(context: context, action: action, onSuccess: onSuccess),
+        );
+      }
+      return null;
+    }
+  }
 }

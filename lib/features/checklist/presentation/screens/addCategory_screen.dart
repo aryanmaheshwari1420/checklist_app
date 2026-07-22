@@ -6,6 +6,7 @@ import 'package:checklist_app/features/checklist/presentation/providers/checklis
 import 'package:checklist_app/shared/models/checklist_category_model.dart';
 import 'package:checklist_app/shared/models/checklist_model.dart';
 import 'package:checklist_app/shared/utils/dialog_utils.dart';
+import 'package:checklist_app/shared/widgets/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -135,18 +136,20 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
   // -------------------- EDIT CATEGORY --------------------
 
   void editCategoryDialog(
-    List<ChecklistCategory> categories,
-    ChecklistCategory category,
-    ChecklistModel? liveChecklist,
-  ) {
-    final TextEditingController controller =
-        TextEditingController(text: category.name);
-    final formKey = GlobalKey<FormState>();
+  List<ChecklistCategory> categories,
+  ChecklistCategory category,
+  ChecklistModel? liveChecklist,
+) {
+  final TextEditingController controller =
+      TextEditingController(text: category.name);
+  final formKey = GlobalKey<FormState>();
+  bool isSubmitting = false;
 
-    showBlurDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
+  showBlurDialog(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
           title: const Text("Edit Category"),
           content: Form(
             key: formKey,
@@ -154,6 +157,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               controller: controller,
               autofocus: true,
               maxLength: 30,
+              enabled: !isSubmitting,
               decoration: const InputDecoration(hintText: "e.g., Work"),
               validator: (value) {
                 final trimmed = value?.trim() ?? '';
@@ -167,86 +171,146 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () async {
-                FocusScope.of(dialogContext).unfocus();
-                await Future.delayed(const Duration(milliseconds: 100));
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              },
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      FocusScope.of(dialogContext).unfocus();
+                      await Future.delayed(const Duration(milliseconds: 100));
+                      if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
 
-                final value = controller.text.trim();
-                final notifier = ref.read(checklistControllerProvider.notifier);
+                      final value = controller.text.trim();
+                      final notifier =
+                          ref.read(checklistControllerProvider.notifier);
 
-                FocusScope.of(dialogContext).unfocus();
-                await Future.delayed(const Duration(milliseconds: 100));
+                      FocusScope.of(dialogContext).unfocus();
+                      setDialogState(() => isSubmitting = true);
 
-                if (_isEditMode && liveChecklist != null) {
-                  // Rename = ONE field update on the categories array —
-                  // items reference categoryId, so they're never touched.
-                  await notifier.renameCategoryInChecklist(
-                    checklist: liveChecklist,
-                    categoryId: category.id,
-                    newName: value,
-                  );
-                } else {
-                  notifier.updateCategory(categoryId: category.id, newName: value);
-                }
+                      if (_isEditMode && liveChecklist != null) {
+                        // Rename = ONE field update on the categories array —
+                        // items reference categoryId, so they're never touched.
+                        await ErrorHandler.run(
+                          context: dialogContext,
+                          action: () => notifier.renameCategoryInChecklist(
+                            checklist: liveChecklist,
+                            categoryId: category.id,
+                            newName: value,
+                          ),
+                          onSuccess: () {
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                          },
+                        );
+                      } else {
+                        notifier.updateCategory(
+                          categoryId: category.id,
+                          newName: value,
+                        );
+                        if (dialogContext.mounted) Navigator.pop(dialogContext);
+                      }
 
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              },
-              child: const Text("Update"),
+                      if (dialogContext.mounted) {
+                        setDialogState(() => isSubmitting = false);
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text("Update"),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   // -------------------- DELETE CATEGORY --------------------
 
-  void deleteCategoryDialog(ChecklistCategory category, ChecklistModel? liveChecklist) {
-    showBlurDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
+  void deleteCategoryDialog(
+  ChecklistCategory category,
+  ChecklistModel? liveChecklist,
+) {
+  bool isSubmitting = false;
+
+  showBlurDialog(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
           title: const Text("Delete Category"),
           content: Text(
             "Delete '${category.name}'? All items inside it will be removed too.",
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
+              onPressed: isSubmitting
+                  ? null
+                  : () => Navigator.pop(dialogContext),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
-              onPressed: () async {
-                final notifier = ref.read(checklistControllerProvider.notifier);
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      final notifier =
+                          ref.read(checklistControllerProvider.notifier);
 
-                if (_isEditMode && liveChecklist != null) {
-                  await notifier.removeCategoryFromChecklist(
-                    checklist: liveChecklist,
-                    categoryId: category.id,
-                  );
-                } else {
-                  notifier.removeCategory(category.id);
-                }
+                      setDialogState(() => isSubmitting = true);
 
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              },
-              child: const Text("Delete"),
+                      if (_isEditMode && liveChecklist != null) {
+                        await ErrorHandler.run(
+                          context: dialogContext,
+                          action: () => notifier.removeCategoryFromChecklist(
+                            checklist: liveChecklist,
+                            categoryId: category.id,
+                          ),
+                          onSuccess: () {
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                          },
+                        );
+                      } else {
+                        notifier.removeCategory(category.id);
+                        if (dialogContext.mounted) Navigator.pop(dialogContext);
+                      }
+
+                      if (dialogContext.mounted) {
+                        setDialogState(() => isSubmitting = false);
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text("Delete"),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {

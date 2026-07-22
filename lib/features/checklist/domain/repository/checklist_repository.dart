@@ -6,11 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class ChecklistRepository {
-  ChecklistRepository({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  ChecklistRepository({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -21,8 +19,7 @@ class ChecklistRepository {
   CollectionReference<Map<String, dynamic>> _itemsRef(
     String uid,
     String checklistId,
-  ) =>
-      _checklistsRef(uid).doc(checklistId).collection('items');
+  ) => _checklistsRef(uid).doc(checklistId).collection('items');
 
   // ---------------------------------------------------------------
   // CHECKLIST METADATA
@@ -37,10 +34,14 @@ class ChecklistRepository {
 
     final batch = _firestore.batch();
 
-    final totalItems =
-        draftItemsByCategoryId.values.fold<int>(0, (sum, l) => sum + l.length);
-    final completedItems = draftItemsByCategoryId.values
-        .fold<int>(0, (sum, l) => sum + l.where((i) => i.checked).length);
+    final totalItems = draftItemsByCategoryId.values.fold<int>(
+      0,
+      (sum, l) => sum + l.length,
+    );
+    final completedItems = draftItemsByCategoryId.values.fold<int>(
+      0,
+      (sum, l) => sum + l.where((i) => i.checked).length,
+    );
 
     batch.set(doc, {
       ...checklist.toMap(),
@@ -65,9 +66,14 @@ class ChecklistRepository {
       }
     }
 
-    batch.commit().catchError((e) {
+    try {
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') return doc.id;
+
       debugPrint("Background sync failed for checklist create ${doc.id}: $e");
-    });
+      rethrow;
+    }
 
     return doc.id;
   }
@@ -78,12 +84,17 @@ class ChecklistRepository {
   Future<void> updateChecklistMetadata(ChecklistModel checklist) async {
     final uid = _auth.currentUser!.uid;
 
-    _checklistsRef(uid).doc(checklist.id).update({
-      ...checklist.toMap(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }).catchError((e) {
+    try {
+      await _checklistsRef(uid).doc(checklist.id).update({
+        ...checklist.toMap(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') return;
+
       debugPrint("Background sync failed for checklist ${checklist.id}: $e");
-    });
+      rethrow;
+    }
   }
 
   Future<void> updateCategories({
@@ -92,61 +103,80 @@ class ChecklistRepository {
   }) async {
     final uid = _auth.currentUser!.uid;
 
-    _checklistsRef(uid).doc(checklistId).update({
-      'categories': categories.map((c) => c.toMap()).toList(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }).catchError((e) {
-      debugPrint("Background sync failed updating categories for $checklistId: $e");
-    });
+    try {
+      await _checklistsRef(uid).doc(checklistId).update({
+        'categories': categories.map((c) => c.toMap()).toList(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') return;
+
+      debugPrint(
+        "Background sync failed updating categories for $checklistId: $e",
+      );
+      rethrow;
+    }
   }
 
   Future<void> deleteChecklist(String checklistId) async {
     final uid = _auth.currentUser!.uid;
 
     // Delete the checklist doc immediately — fire-and-forget, offline-safe,
-  // exactly like create/update. This resolves instantly regardless of
-  // network state, so the UI never hangs waiting on it.
-  _checklistsRef(uid).doc(checklistId).delete().catchError((e) {
-    debugPrint("Background sync failed for checklist delete $checklistId: $e");
-  });
+    // exactly like create/update. This resolves instantly regardless of
+    // network state, so the UI never hangs waiting on it.
+    try {
+      await _checklistsRef(uid).doc(checklistId).delete();
+    } on FirebaseException catch (e) {
+      if (e.code != 'unavailable') {
+        debugPrint(
+          "Background sync failed for checklist delete $checklistId: $e",
+        );
+        rethrow;
+      }
+    }
 
-  // Clean up the items subcollection in the background — not awaited by
-  // the caller, so a slow/offline items query never blocks deletion of
-  // the checklist itself.
-  _deleteAllItems(uid, checklistId);
+    _deleteAllItems(uid, checklistId);
   }
 
   Future<void> _deleteAllItems(String uid, String checklistId) async {
-  try {
-    // Try cache first — if this checklist's items were ever loaded via
-    // watchItems()'s .snapshots(), they're already cached locally and this
-    // resolves instantly even fully offline. A server-sourced get() here
-    // is what was hanging: with zero connectivity it can block for a long
-    // time before failing, which is why deletion felt inconsistent.
-    QuerySnapshot<Map<String, dynamic>> snapshot;
     try {
-      snapshot = await _itemsRef(uid, checklistId)
-          .get(const GetOptions(source: Source.cache));
-    } catch (_) {
-      // No cached data (e.g. this checklist's items screen was never
-      // opened) — fall back to a normal get(), which is fine when online
-      // and simply won't find anything useful to delete when offline.
-      snapshot = await _itemsRef(uid, checklistId).get();
+      // Try cache first — if this checklist's items were ever loaded via
+      // watchItems()'s .snapshots(), they're already cached locally and this
+      // resolves instantly even fully offline. A server-sourced get() here
+      // is what was hanging: with zero connectivity it can block for a long
+      // time before failing, which is why deletion felt inconsistent.
+      QuerySnapshot<Map<String, dynamic>> snapshot;
+      try {
+        snapshot = await _itemsRef(
+          uid,
+          checklistId,
+        ).get(const GetOptions(source: Source.cache));
+      } catch (_) {
+        // No cached data (e.g. this checklist's items screen was never
+        // opened) — fall back to a normal get(), which is fine when online
+        // and simply won't find anything useful to delete when offline.
+        snapshot = await _itemsRef(uid, checklistId).get();
+      }
+
+      if (snapshot.docs.isEmpty) return;
+
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      try {
+        await batch.commit();
+      } on FirebaseException catch (e) {
+        if (e.code == 'unavailable') return;
+
+        debugPrint(
+          "Background sync failed deleting items for $checklistId: $e",
+        );
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch items for deletion of $checklistId: $e");
     }
-
-    if (snapshot.docs.isEmpty) return;
-
-    final batch = _firestore.batch();
-    for (final doc in snapshot.docs) {
-      batch.delete(doc.reference);
-    }
-
-    batch.commit().catchError((e) {
-      debugPrint("Background sync failed deleting items for $checklistId: $e");
-    });
-  } catch (e) {
-    debugPrint("Failed to fetch items for deletion of $checklistId: $e");
-  }
   }
 
   Stream<ChecklistModel> watchChecklistById(String checklistId) {
@@ -170,9 +200,11 @@ class ChecklistRepository {
     return _itemsRef(uid, checklistId)
         .orderBy('order')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ChecklistItemModel.fromMap(doc.id, doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ChecklistItemModel.fromMap(doc.id, doc.data()))
+              .toList(),
+        );
   }
 
   Future<void> addItem({
@@ -199,9 +231,15 @@ class ChecklistRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    batch.commit().catchError((e) {
+    try {
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      // 'unavailable' means Firestore queued this locally and will sync
+      // once back online — expected, not a failure the user needs to see.
+      if (e.code == 'unavailable') return;
       debugPrint("Background sync failed adding item to $checklistId: $e");
-    });
+      rethrow;
+    }
   }
 
   /// The hot-path fix: toggling a checkbox updates one item field and
@@ -226,9 +264,15 @@ class ChecklistRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    batch.commit().catchError((e) {
-      debugPrint("Background sync failed toggling item $itemId: $e");
-    });
+    try {
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      // 'unavailable' means Firestore queued this locally and will sync
+      // once back online — expected, not a failure the user needs to see.
+      if (e.code == 'unavailable') return;
+      debugPrint("Failed to toggle item $itemId: $e");
+      rethrow;
+    }
   }
 
   Future<void> updateItemTitle({
@@ -238,12 +282,17 @@ class ChecklistRepository {
   }) async {
     final uid = _auth.currentUser!.uid;
 
-    _itemsRef(uid, checklistId).doc(itemId).update({
-      'title': title,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }).catchError((e) {
+    try {
+      await _itemsRef(uid, checklistId).doc(itemId).update({
+        'title': title,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') return;
+
       debugPrint("Background sync failed updating item $itemId: $e");
-    });
+      rethrow;
+    }
   }
 
   /// Needs to know whether the item was checked, to correctly decrement
@@ -265,9 +314,15 @@ class ChecklistRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    batch.commit().catchError((e) {
+    try {
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      // 'unavailable' means Firestore queued this locally and will sync
+      // once back online — expected, not a failure the user needs to see.
+      if (e.code == 'unavailable') return;
       debugPrint("Background sync failed deleting item $itemId: $e");
-    });
+      rethrow;
+    }
   }
 
   /// Deletes all items under a categoryId and decrements counters by the
@@ -278,15 +333,17 @@ class ChecklistRepository {
   }) async {
     final uid = _auth.currentUser!.uid;
 
-    final snapshot = await _itemsRef(uid, checklistId)
-        .where('categoryId', isEqualTo: categoryId)
-        .get();
+    final snapshot = await _itemsRef(
+      uid,
+      checklistId,
+    ).where('categoryId', isEqualTo: categoryId).get();
 
     if (snapshot.docs.isEmpty) return;
 
     final removedTotal = snapshot.docs.length;
-    final removedCompleted =
-        snapshot.docs.where((d) => (d.data()['checked'] ?? false) == true).length;
+    final removedCompleted = snapshot.docs
+        .where((d) => (d.data()['checked'] ?? false) == true)
+        .length;
 
     final batch = _firestore.batch();
     for (final doc in snapshot.docs) {
@@ -299,8 +356,16 @@ class ChecklistRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    batch.commit().catchError((e) {
-      debugPrint("Background sync failed deleting category items for $checklistId: $e");
-    });
+    try {
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      // 'unavailable' means Firestore queued this locally and will sync
+      // once back online — expected, not a failure the user needs to see.
+      if (e.code == 'unavailable') return;
+      debugPrint(
+        "Background sync failed deleting category items for $checklistId: $e",
+      );
+      rethrow;
+    }
   }
 }

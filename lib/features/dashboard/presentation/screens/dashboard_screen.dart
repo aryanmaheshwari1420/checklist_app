@@ -10,6 +10,7 @@ import 'package:checklist_app/features/dashboard/presentation/widgets/overall_pr
 import 'package:checklist_app/features/dashboard/presentation/widgets/quick_actions_section.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/recent_checklist_card.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/summary_card.dart';
+import 'package:checklist_app/shared/widgets/error_handler.dart';
 import 'package:checklist_app/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,18 +57,18 @@ class DashboardScreen extends ConsumerWidget {
           const Scaffold(body: Center(child: CircularProgressIndicator())),
 
       error: (error, stack) => Scaffold(
-    body: ErrorState(
-      message: friendlyErrorMessage(error),
-      onRetry: () => ref.invalidate(dashboardProvider),
-    ),
-  ),
+        body: ErrorState(
+          message: friendlyErrorMessage(error),
+          onRetry: () => ref.invalidate(dashboardProvider),
+        ),
+      ),
 
       data: (checklists) {
         final hasChecklist = checklists.isNotEmpty;
         final user = currentUserAsync.value;
         final total = checklists.length;
 
-         int completed = 0;
+        int completed = 0;
         int pending = 0;
         int totalItems = 0;
         int checkedItems = 0;
@@ -84,7 +85,8 @@ class DashboardScreen extends ConsumerWidget {
           totalItems += checklist.totalItems;
           checkedItems += checklist.completedItems;
 
-          final isCompleted = checklist.totalItems > 0 &&
+          final isCompleted =
+              checklist.totalItems > 0 &&
               checklist.completedItems == checklist.totalItems;
 
           if (isCompleted) {
@@ -105,15 +107,16 @@ class DashboardScreen extends ConsumerWidget {
           }
         }
 
-        final overallProgress =
-            totalItems == 0 ? 0.0 : checkedItems / totalItems;
+        final overallProgress = totalItems == 0
+            ? 0.0
+            : checkedItems / totalItems;
 
         // Only preview the first N checklists on the dashboard itself.
-        final previewChecklists =
-            checklists.take(_dashboardChecklistPreviewCount).toList();
+        final previewChecklists = checklists
+            .take(_dashboardChecklistPreviewCount)
+            .toList();
         final hasMoreChecklists =
             checklists.length > _dashboardChecklistPreviewCount;
-
 
         return Scaffold(
           // The background color and AppBar style are now handled by the theme
@@ -165,9 +168,9 @@ class DashboardScreen extends ConsumerWidget {
                   name: user?.firstName ?? "User",
                   hasChecklist: hasChecklist,
                 ),
-            
+
                 const SizedBox(height: 25),
-            
+
                 Row(
                   children: [
                     SummaryCard(
@@ -203,21 +206,21 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-            
+
                 const SizedBox(height: 30),
-            
+
                 OverallProgressCard(
                   progress: overallProgress,
                   completed: checkedItems,
                   total: totalItems,
                 ),
-            
+
                 const SizedBox(height: 28),
-            
+
                 const QuickActionsSection(),
-            
+
                 const SizedBox(height: 28),
-            
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -247,9 +250,9 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                   ],
                 ),
-            
+
                 const SizedBox(height: 18),
-            
+
                 if (checklists.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 50),
@@ -257,21 +260,20 @@ class DashboardScreen extends ConsumerWidget {
                   )
                 else
                   ...previewChecklists.map((checklist) {
-
                     final checklistTotal = checklist.totalItems;
                     final checklistCompleted = checklist.completedItems;
 
                     String status;
-            
+
                     if (checklistCompleted == checklistTotal &&
-                              checklistTotal > 0) {
-                            status = "Completed";
-                          } else if (checklistCompleted == 0) {
-                            status = "Pending";
-                          } else {
-                            status = "In Progress";
-                          }
-            
+                        checklistTotal > 0) {
+                      status = "Completed";
+                    } else if (checklistCompleted == 0) {
+                      status = "Pending";
+                    } else {
+                      status = "In Progress";
+                    }
+
                     return RecentChecklistCard(
                       title: checklist.title,
                       completed: checklistCompleted,
@@ -286,23 +288,29 @@ class DashboardScreen extends ConsumerWidget {
                           arguments: {
                             'checklistId': checklist.id,
                             'camefromViewAll': false,
-                          }
+                          },
                         );
                       },
                       onDelete: () async {
-                        await ref
-                            .read(checklistControllerProvider.notifier)
-                            .deleteChecklist(checklist.id);
-            
-                        ref.invalidate(dashboardProvider);
-            
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Checklist deleted successfully."),
-                            ),
-                          );
-                        }
+                        await ErrorHandler.runWithRetry(
+                          context: context,
+                          action: () => ref
+                              .read(checklistControllerProvider.notifier)
+                              .deleteChecklist(checklist.id),
+                          onSuccess: () {
+                            ref.invalidate(dashboardProvider);
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Checklist deleted successfully.",
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        );
                       },
                     );
                   }),

@@ -2,6 +2,7 @@ import 'package:checklist_app/app/app_routes.dart';
 import 'package:checklist_app/features/checklist/presentation/providers/checklist_controller.dart';
 import 'package:checklist_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:checklist_app/features/dashboard/presentation/widgets/recent_checklist_card.dart';
+import 'package:checklist_app/shared/widgets/error_handler.dart';
 import 'package:checklist_app/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,19 +90,23 @@ class AllChecklistsScreen extends ConsumerWidget {
                   );
                 },
                 onDelete: () async {
-                  await ref
-                      .read(checklistControllerProvider.notifier)
-                      .deleteChecklist(checklist.id);
+                  await ErrorHandler.runWithRetry(
+                    context: context,
+                    action: () => ref
+                        .read(checklistControllerProvider.notifier)
+                        .deleteChecklist(checklist.id),
+                    onSuccess: () {
+                      ref.invalidate(dashboardProvider);
 
-                  ref.invalidate(dashboardProvider);
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Checklist deleted successfully."),
-                      ),
-                    );
-                  }
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Checklist deleted successfully."),
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               );
             },
